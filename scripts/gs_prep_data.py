@@ -60,19 +60,23 @@ def spinor(theta, phi, sign):
     return np.array([-np.exp(-1j * phi) * np.sin(theta / 2), np.cos(theta / 2)])
 
 
-def overlap(psi, N, signs, theta, phi):
-    v = psi.reshape([2] * N)  # axis 0 = highest bit = site N-1
-    for site in range(N - 1, -1, -1):
-        v = np.tensordot(spinor(theta, phi, signs[site]).conj(), v, axes=(0, 0))
-    return abs(complex(v))
+def overlap(ground, N, signs, theta, phi):
+    """sqrt(sum_k |<trial|psi_k>|^2) over the ground manifold."""
+    tot = 0.0
+    for psi in ground:
+        v = psi.reshape([2] * N)  # axis 0 = highest bit = site N-1
+        for site in range(N - 1, -1, -1):
+            v = np.tensordot(spinor(theta, phi, signs[site]).conj(), v, axes=(0, 0))
+        tot += abs(complex(v)) ** 2
+    return np.sqrt(tot)
 
 
-def best_overlap(psi, N, signs, starts=6, seed=0):
+def best_overlap(ground, N, signs, starts=6, seed=0):
     rng = np.random.default_rng(seed)
     best = 0.0
     for _ in range(starts):
         x0 = [np.arccos(rng.uniform(-1, 1)), rng.uniform(0, 2 * np.pi)]
-        r = minimize(lambda x: -overlap(psi, N, signs, *x), x0, method="Nelder-Mead",
+        r = minimize(lambda x: -overlap(ground, N, signs, *x), x0, method="Nelder-Mead",
                      options={"xatol": 1e-4, "fatol": 1e-8})
         best = max(best, -r.fun)
     return best
@@ -88,13 +92,15 @@ def main(argv=None):
         cl = best_cluster(N, include_j3=bool(p.J3))
         H = SpinModel(cl, p).operator()
         op = LinearOperator((H.dim, H.dim), matvec=H.matvec, dtype=complex)
-        E, V = eigsh(op, k=4, which="SA", tol=1e-10)
+        E, V = eigsh(op, k=6, which="SA", tol=1e-10)
         order = np.argsort(E)
         E, V = E[order], V[:, order]
-        psi = V[:, 0]
-        ov = {name: best_overlap(psi, N, s) for name, s in patterns(cl).items()}
-        row = {"N": N, "params": a.params, "E": E.tolist(), "gap": float(E[1] - E[0]),
-               "overlaps": ov, "best": max(ov.values())}
+        deg = int(np.sum(E - E[0] < 1e-6))
+        ground = [V[:, k] for k in range(deg)]
+        # overlap with the ground manifold: sqrt(sum_k |<trial|psi_k>|^2)
+        ov = {name: best_overlap(ground, N, s) for name, s in patterns(cl).items()}
+        row = {"N": N, "params": a.params, "E": E.tolist(), "degeneracy": deg,
+               "gap": float(E[deg] - E[0]), "overlaps": ov, "best": max(ov.values())}
         print(json.dumps(row), flush=True)
         with open(ROOT / "data" / "gs_prep.jsonl", "a") as fh:
             fh.write(json.dumps(row) + "\n")

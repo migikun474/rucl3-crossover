@@ -135,6 +135,75 @@ def lanczos_ground_state(H, v0: np.ndarray | None = None, tol: float = 1e-10,
                        time.perf_counter() - t0, evals[:6])
 
 
+class _Deflated:
+    """H + shift * sum_k |psi_k><psi_k|: pushes already-found states up."""
+
+    def __init__(self, H, vectors, shift):
+        self.H, self.vectors, self.shift = H, vectors, shift
+        self.dim = H.dim
+
+    @property
+    def nmatvec(self):
+        return getattr(self.H, "nmatvec", 0)
+
+    def matvec(self, v, out=None):
+        out = self.H.matvec(v, out)
+        for u in self.vectors:
+            out += (self.shift * np.vdot(u, v)) * u
+        return out
+
+
+@dataclass
+class GroundManifold:
+    """All states within ``deg_tol`` of the lowest energy, plus the gap to the
+    next level.  Finite C3-symmetric tori often have a degenerate ground state
+    (a pair of momenta +-k); physical (T -> 0) correlations are the average
+    over the manifold, which restores translation invariance."""
+    states: list
+    gap: float
+    next_energy: float
+    matvecs: int
+    seconds: float
+
+    @property
+    def energy(self) -> float:
+        return self.states[0].energy
+
+    @property
+    def degeneracy(self) -> int:
+        return len(self.states)
+
+    @property
+    def vector(self) -> np.ndarray:
+        return self.states[0].vector
+
+
+def ground_manifold(H, deg_tol: float = 1e-6, max_states: int = 8, tol: float = 1e-10,
+                    seed: int = 0) -> GroundManifold:
+    """Lowest level and its degeneracy by successive deflated Lanczos runs."""
+    t0 = time.perf_counter()
+    n0 = getattr(H, "nmatvec", 0)
+    states = [lanczos_ground_state(H, tol=tol, seed=seed)]
+    shift = 10.0 * (abs(states[0].energy) + 1.0)
+    while True:
+        Hd = _Deflated(H, [s.vector for s in states], shift)
+        rng = np.random.default_rng(seed + len(states))
+        v0 = rng.standard_normal(H.dim) + 1j * rng.standard_normal(H.dim)
+        for s in states:
+            v0 -= np.vdot(s.vector, v0) * s.vector
+        nxt = lanczos_ground_state(Hd, v0=v0, tol=tol)
+        if nxt.energy - states[0].energy > deg_tol or len(states) >= max_states:
+            break
+        states.append(nxt)
+    return GroundManifold(states, nxt.energy - states[0].energy, nxt.energy,
+                          getattr(H, "nmatvec", 0) - n0, time.perf_counter() - t0)
+
+
+def manifold_states(gs) -> list:
+    """The list of states to average over, for a GroundState or GroundManifold."""
+    return gs.states if isinstance(gs, GroundManifold) else [gs]
+
+
 # ----------------------------------------------------------------------
 # time evolution
 # ----------------------------------------------------------------------
@@ -206,13 +275,15 @@ class Correlations:
     seconds: float
 
 
-def correlations(H, gs: GroundState, N: int, times: np.ndarray,
+def correlations(H, gs: GroundState | GroundManifold, N: int, times: np.ndarray,
                  ref_sites=(0, 1), m: int = 16, tol: float = 1e-10,
                  progress: bool = False) -> Correlations:
     """Spin correlations on a uniform time grid ``times`` (starting at 0).
 
     Translation invariance means the reference sites (one per sublattice)
-    give every pair (i, j); see :func:`rucl3.classical.spectrum.structure_factor`.
+    give every pair (i, j); see :func:`rucl3.classical.spectrum.momentum_correlations`.
+    For a degenerate ground state pass the :class:`GroundManifold`; the
+    result is averaged over it (otherwise translation invariance fails).
     """
     times = np.asarray(times, dtype=float)
     if times[0] != 0 or np.any(np.diff(times) <= 0):
@@ -220,19 +291,23 @@ def correlations(H, gs: GroundState, N: int, times: np.ndarray,
     t0 = time.perf_counter()
     n0 = getattr(H, "nmatvec", 0)
     prop = KrylovPropagator(H, m=m, tol=tol)
-    psi0, E0 = gs.vector, gs.energy
+    states = manifold_states(gs)
     C = np.zeros((3, 3, N, len(ref_sites), len(times)), dtype=complex)
-    for s, j in enumerate(ref_sites):
-        for b, pb in enumerate("XYZ"):
-            phi = apply_pauli(psi0, j, pb)
-            for k, t in enumerate(times):
-                if k:
-                    phi = prop.evolve(phi, t - times[k - 1])
-                phase = np.exp(1j * E0 * t) / 4  # S = sigma/2 on both operators
-                for i in range(N):
-                    for a, pa in enumerate("XYZ"):
-                        C[a, b, i, s, k] = phase * pauli_overlap(psi0, phi, i, pa)
-            if progress:
-                print(f"  ref site {j}, S^{pb}: done, {time.perf_counter() - t0:.1f}s", flush=True)
+    for g in states:
+        psi0, E0 = g.vector, g.energy
+        for s, j in enumerate(ref_sites):
+            for b, pb in enumerate("XYZ"):
+                phi = apply_pauli(psi0, j, pb)
+                for k, t in enumerate(times):
+                    if k:
+                        phi = prop.evolve(phi, t - times[k - 1])
+                    # S = sigma/2 on both operators; average over the manifold
+                    phase = np.exp(1j * E0 * t) / (4 * len(states))
+                    for i in range(N):
+                        for a, pa in enumerate("XYZ"):
+                            C[a, b, i, s, k] += phase * pauli_overlap(psi0, phi, i, pa)
+                if progress:
+                    print(f"  ref site {j}, S^{pb}: done, {time.perf_counter() - t0:.1f}s",
+                          flush=True)
     return Correlations(times, np.array(ref_sites), C,
                         getattr(H, "nmatvec", 0) - n0, time.perf_counter() - t0)
