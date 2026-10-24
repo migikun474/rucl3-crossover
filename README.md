@@ -91,6 +91,12 @@ with less than 8 GB RAM add `--krylov-m 8`.
   J₃ = 0 tests).  `best_cluster` picks the most compact faithful torus;
   N = 14, 18, 24 are C₃ symmetric.
 
+* **Degenerate ground states.** C₃-symmetric tori have a degenerate ground
+  level (6-fold for Winter et al. at N = 14: three zigzag orientations ×
+  time reversal). `ground_manifold` finds it by deflated Lanczos (ARPACK
+  with small k undercounts it) and all correlations are averaged over it.
+  Classical timings are reported per ground state.
+
 ## Open items that need a human decision or check
 
 * **Parameter sets** (`rucl3/model/params.py`): values were entered from
