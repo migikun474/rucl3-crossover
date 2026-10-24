@@ -50,11 +50,16 @@ def main(argv=None):
             i = c["N"].index(c["N_star"])
             ax.plot(c["N_star"], c["quantum_s"][i], "o", ms=5, color=col,
                     mec="white", mew=1.5, zorder=5)
-            ax.annotate(f"$N^*$ = {c['N_star']}", (c["N_star"], c["quantum_s"][i]),
-                        xytext=(4, -10), textcoords="offset points", color=INK, fontsize=7)
+    stars = sorted({c["N_star"] for c in curves if c["N_star"]})
+    if stars:
+        i = c0["N"].index(stars[0])
+        lab = f"$N^*$ = {stars[0]}" + (f"–{stars[-1]}" if len(stars) > 1 else "")
+        ax.annotate(lab, (stars[0], c0["classical_s"][i]), xytext=(10, -14),
+                    textcoords="offset points", color=INK, fontsize=7)
+    xmax = c0["N"][-1]
     for v, lab in [(3600, "1 h"), (86400 * 30, "1 month"), (YEAR * 1e3, "1000 yr")]:
         ax.axhline(v, color=GRID, lw=0.8, zorder=0)
-        ax.text(c0["N"][0], v * 1.4, lab, color=INK2, fontsize=6)
+        ax.text(xmax, v * 1.6, lab, color=INK2, fontsize=6, ha="right", va="bottom")
     ax.set_xlabel("number of spins $N$")
     ax.set_ylabel("wall-clock time (s)")
     ax.spines[["top", "right"]].set_visible(False)
