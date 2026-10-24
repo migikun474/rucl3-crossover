@@ -173,7 +173,7 @@ class KrylovPropagator:
             if k:
                 w -= beta[k - 1] * V[k - 1]
             # full reorthogonalisation inside the small basis
-            w -= V[: k + 1].T @ (V[: k + 1].conj() @ w)
+            w -= V[: k + 1].T @ np.conj(V[: k + 1] @ np.conj(w))
             beta[k] = np.linalg.norm(w)
             if beta[k] < 1e-12:  # invariant subspace: exact
                 k_end = k + 1
