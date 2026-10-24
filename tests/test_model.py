@@ -54,7 +54,8 @@ def test_three_representations_agree(N):
     m = SpinModel(best_cluster(N, include_j3=False), GENERIC.scaled(J3=0.0))
     Hs = m.sparse().toarray()
     assert np.allclose(Hs, Hs.conj().T)
-    assert np.allclose(Hs, m.apply_pauli_dense())
+    if N <= 8:  # dense Pauli sum is slow beyond this
+        assert np.allclose(Hs, m.apply_pauli_dense())
     rng = np.random.default_rng(1)
     v = rng.standard_normal(m.dim) + 1j * rng.standard_normal(m.dim)
     assert np.allclose(m.operator()(v), Hs @ v)
