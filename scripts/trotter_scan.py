@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT))
 
 import rucl3  # noqa: E402,F401
 import numpy as np  # noqa: E402
-from rucl3.classical.exact import Correlations, correlations, lanczos_ground_state  # noqa: E402
+from rucl3.classical.exact import Correlations, correlations, ground_manifold  # noqa: E402
 from rucl3.classical.spectrum import fourier, momentum_correlations  # noqa: E402
 from rucl3.model import params as P  # noqa: E402
 from rucl3.model.hamiltonian import SpinModel  # noqa: E402
@@ -67,7 +67,7 @@ def main(argv=None):
         cl = best_cluster(N, include_j3=bool(p.J3))
         model = SpinModel(cl, p)
         H = model.operator()
-        gs = lanczos_ground_state(H)
+        gs = ground_manifold(H)
         times = longest.times()
         f = out / f"exact_{a.params}_N{N}.npz"
         saved = np.load(f) if f.exists() else None

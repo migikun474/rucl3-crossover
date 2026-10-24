@@ -21,7 +21,8 @@ from dataclasses import dataclass
 import numba as nb
 import numpy as np
 
-from ..classical.exact import Correlations, GroundState, apply_pauli, pauli_overlap
+from ..classical.exact import (Correlations, GroundManifold, GroundState, apply_pauli,
+                               manifold_states, pauli_overlap)
 from ..model.hamiltonian import PauliTerm, SpinModel
 
 # Suzuki's fourth-order coefficient
@@ -149,27 +150,31 @@ class TrotterCircuit:
         return states
 
 
-def trotter_correlations(model: SpinModel, gs: GroundState, times: np.ndarray,
+def trotter_correlations(model: SpinModel, gs: GroundState | GroundManifold,
+                         times: np.ndarray,
                          dt: float, order: int = 2, ref_sites=(0, 1)) -> Correlations:
     """Correlations measured with the Trotter circuit, step size <= dt."""
     times = np.asarray(times, dtype=float)
     t0 = time.perf_counter()
     N = model.N
     circ = TrotterCircuit(model, order)
-    vecs = [gs.vector]
-    labels = []
-    for s, j in enumerate(ref_sites):
-        for b, pb in enumerate("XYZ"):
-            vecs.append(apply_pauli(gs.vector, j, pb))
-            labels.append((s, b))
-    states = np.array(vecs)
+    ground = manifold_states(gs)
     C = np.zeros((3, 3, N, len(ref_sites), len(times)), dtype=complex)
-    for k, t in enumerate(times):
-        if k:
-            span = t - times[k - 1]
-            circ.evolve(states, span, max(1, int(np.ceil(span / dt - 1e-9))))
-        for n, (s, b) in enumerate(labels):
-            for i in range(N):
-                for a, pa in enumerate("XYZ"):
-                    C[a, b, i, s, k] = pauli_overlap(states[0], states[n + 1], i, pa) / 4
+    for g in ground:
+        vecs = [g.vector]
+        labels = []
+        for s, j in enumerate(ref_sites):
+            for b, pb in enumerate("XYZ"):
+                vecs.append(apply_pauli(g.vector, j, pb))
+                labels.append((s, b))
+        states = np.array(vecs)
+        for k, t in enumerate(times):
+            if k:
+                span = t - times[k - 1]
+                circ.evolve(states, span, max(1, int(np.ceil(span / dt - 1e-9))))
+            for n, (s, b) in enumerate(labels):
+                for i in range(N):
+                    for a, pa in enumerate("XYZ"):
+                        C[a, b, i, s, k] += pauli_overlap(states[0], states[n + 1], i, pa) / (
+                            4 * len(ground))
     return Correlations(times, np.array(ref_sites), C, circ.nrot, time.perf_counter() - t0)

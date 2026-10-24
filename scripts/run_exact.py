@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT))
 
 import rucl3  # noqa: E402,F401  (must precede numpy: pins BLAS threads)
 import numpy as np  # noqa: E402
-from rucl3.classical.exact import correlations, lanczos_ground_state  # noqa: E402
+from rucl3.classical.exact import correlations, ground_manifold  # noqa: E402
 from rucl3.classical.spectrum import fourier, momentum_correlations  # noqa: E402
 from rucl3.model import params as P  # noqa: E402
 from rucl3.model.hamiltonian import SpinModel  # noqa: E402
@@ -62,13 +62,14 @@ def main(argv=None):
     t_mv = (time.perf_counter() - t_mv) / 3
     print(f"matvec {t_mv:.3f}s (setup {time.perf_counter() - t0:.1f}s)", flush=True)
 
-    gs = lanczos_ground_state(H)
-    print(f"E0={gs.energy:.8f} E0/N={gs.energy / a.N:.6f} res={gs.residual:.1e} "
-          f"matvecs={gs.matvecs} {gs.seconds:.1f}s ritz={np.round(gs.ritz[:4], 5).tolist()}",
-          flush=True)
+    gs = ground_manifold(H)
+    print(f"E0={gs.energy:.8f} E0/N={gs.energy / a.N:.6f} degeneracy={gs.degeneracy} "
+          f"gap={gs.gap:.5f} res={max(s.residual for s in gs.states):.1e} "
+          f"matvecs={gs.matvecs} {gs.seconds:.1f}s", flush=True)
     summary = {
-        "N": a.N, "params": a.params, "E0": gs.energy, "gs_seconds": gs.seconds,
-        "gs_matvecs": gs.matvecs, "matvec_seconds": t_mv, "ritz": gs.ritz[:6].tolist(),
+        "N": a.N, "params": a.params, "cluster": cl.T.tolist(), "E0": gs.energy,
+        "degeneracy": gs.degeneracy, "gap": gs.gap, "gs_seconds": gs.seconds,
+        "gs_matvecs": gs.matvecs, "matvec_seconds": t_mv,
         "dE": a.dE, "T": target.T, "n_times": target.n_times,
     }
     out = Path(a.out)
@@ -82,7 +83,8 @@ def main(argv=None):
         Sqw = fourier(times, Sqt, target.window(times), omegas)
         summary |= {
             "corr_seconds": corr.seconds, "corr_matvecs": corr.matvecs,
-            "seconds_per_unit_time": corr.seconds / times[-1],
+            # per ground state, so sizes with different degeneracy compare
+            "seconds_per_unit_time": corr.seconds / times[-1] / gs.degeneracy,
             "S_peak": float(np.einsum("qaaw->qw", Sqw).real.max()),
         }
         np.savez_compressed(out / f"exact_{a.params}_N{a.N}.npz", times=times, C=corr.C,

@@ -121,3 +121,28 @@ def test_time_domain_spectrum_matches_lehmann():
     S_ref = lehmann_dense(m.sparse().toarray(), cl, q, omegas, sigma=1 / target.tau)
     scale = np.abs(S_ref).max()
     assert np.abs(S_t - S_ref).max() < 1e-4 * scale
+
+
+def test_degenerate_ground_state_is_averaged():
+    """The 14-site C3 torus has a two-fold ground state for the alpha-RuCl3
+    parameters; averaging over it restores translation and C3 symmetry."""
+    from rucl3.classical.exact import ground_manifold
+    cl = best_cluster(14)
+    m = SpinModel(cl, GENERIC.scaled(J3=0.9))
+    H = m.operator()
+    gm = ground_manifold(H)
+    assert gm.degeneracy == 2 and gm.gap > 1e-3
+    E = np.sort(eigsh(m.sparse(), k=6, which="SA", tol=1e-12)[0])  # small k can miss a partner
+    assert np.allclose([s.energy for s in gm.states], E[:2], atol=1e-8)
+    assert gm.next_energy == pytest.approx(E[2], abs=1e-6)
+
+    times = np.array([0.0, 0.4])
+    perm = cl.translate((1, 0))
+    ca = correlations(H, gm, cl.N, times, ref_sites=(0, 1))
+    cb = correlations(H, gm, cl.N, times, ref_sites=(perm[0], perm[1]))
+    assert np.allclose(cb.C[:, :, perm], ca.C, atol=1e-8)
+
+    q = cl.momenta()
+    Sq = np.einsum("qaat->qt", momentum_correlations(cl, ca, q))[:, 0].real
+    shell = np.isclose(np.linalg.norm(q, axis=1), np.linalg.norm(q, axis=1).max())
+    assert shell.sum() == 6 and np.ptp(Sq[shell]) < 1e-8
