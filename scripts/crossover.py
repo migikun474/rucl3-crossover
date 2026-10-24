@@ -58,7 +58,7 @@ def main(argv=None):
 
     out = {"params": a.params, "dE": a.dE, "eps": a.eps, "T": target.T, "S_peak": S_peak,
            "classical_fit": cfit.__dict__, "prep": prep_info, "curves": []}
-    Ns = range(16, a.Nmax + 1, 4)
+    Ns = range(16, a.Nmax + 1, 2)
     for order in (2, 4):
         try:
             tf = fit_trotter(scan, order, conservative=True)

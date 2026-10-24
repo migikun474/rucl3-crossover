@@ -9,6 +9,7 @@ every assumption is an argument of :func:`crossover`.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 import numpy as np
 
@@ -32,6 +33,12 @@ class CrossoverResult:
     N_star_prep: int | None
 
 
+@lru_cache(maxsize=None)
+def _terms(params: ParameterSet, N: int):
+    cl = best_cluster(N, include_j3=bool(params.J3))
+    return tuple(ordered_terms(SpinModel(cl, params)))
+
+
 def _first_below(N, q, c):
     idx = np.nonzero(q < c)[0]
     return int(N[idx[0]]) if len(idx) else None
@@ -50,8 +57,7 @@ def crossover(params: ParameterSet, target: AccuracyTarget, spec: TrotterSpec,
     Ns = np.array([n for n in Ns if n % 2 == 0])
     cl_s, q_s, qp_s, qubits = [], [], [], []
     for N in Ns:
-        cl = best_cluster(int(N), include_j3=bool(params.J3))
-        terms = ordered_terms(SpinModel(cl, params))
+        terms = list(_terms(params, int(N)))
         prep = prep_of_N(N) if prep_of_N else None
         qc = quantum_cost(int(N), terms, target, spec, S_peak, physical_error, prep)
         cl_s.append(float(classical.seconds(N, target.T, free=classical_free_exponent)))
