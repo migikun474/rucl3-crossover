@@ -196,54 +196,58 @@ class Cluster:
         return True
 
 
-def best_cluster(N: int, include_j3: bool = True, search: int = 6) -> Cluster:
+def best_cluster(N: int, include_j3: bool = True, search: int | None = None) -> Cluster:
     """Most compact faithful torus with N sites.
 
-    Among all supercells with |det T| = N/2 that pass :meth:`Cluster.check`,
-    pick the one with the largest minimum image distance, preferring C3
-    symmetric supercells on ties.  Faithful third-neighbour bonds need
-    N >= 14; pass ``include_j3=False`` for smaller test clusters.
+    Every supercell lattice of index N/2 has a unique Hermite normal form
+    [[a, b], [0, d]] with a d = N/2 and 0 <= b < d, so all of them are
+    enumerated exactly.  Among those that pass :meth:`Cluster.check`, pick the
+    one with the largest minimum image distance, preferring C3-symmetric
+    supercells, then the most equilateral reduced basis.  Faithful
+    third-neighbour bonds need N >= 14; pass ``include_j3=False`` for smaller
+    test clusters.  (``search`` is accepted for backward compatibility.)
     """
     if N % 2:
         raise ValueError("honeycomb clusters have an even number of sites")
     n = N // 2
-    seen = set()
     best, best_key = None, None
-    rng = range(-search, search + 1)
-    for a, b, c, d in itertools.product(rng, repeat=4):
-        if a * d - b * c != n:
+    for a in range(1, n + 1):
+        if n % a:
             continue
-        T = np.array([[a, b], [c, d]])
-        L = T @ BRAVAIS
-        # canonical key for the lattice spanned by T: its Hermite normal form
-        key_lat = _hnf(T)
-        if key_lat in seen:
-            continue
-        seen.add(key_lat)
-        cl = Cluster(T)
-        if cl.check(include_j3):
-            continue
-        key = (round(cl.min_image_distance(), 6), cl.has_c3(),
-               -round(abs(np.linalg.norm(L[0]) - np.linalg.norm(L[1])), 6))
-        if best_key is None or key > best_key:
-            best, best_key = cl, key
+        d = n // a
+        for b in range(d):
+            T = gauss_reduce(np.array([[a, b], [0, d]]))
+            cl = Cluster(T)
+            if cl.check(include_j3):
+                continue
+            L = cl.supercell
+            key = (round(cl.min_image_distance(), 6), cl.has_c3(),
+                   -round(abs(np.linalg.norm(L[0]) - np.linalg.norm(L[1])), 6))
+            if best_key is None or key > best_key:
+                best, best_key = cl, key
     if best is None:
         raise ValueError(f"no faithful {N}-site cluster found")
     return best
 
 
-def _hnf(T: np.ndarray) -> tuple:
-    """Hermite normal form (row style) of a 2x2 integer matrix, as a tuple."""
-    M = [list(map(int, T[0])), list(map(int, T[1]))]
-    # column 0: Euclid on rows
-    while M[1][0] != 0:
-        q = M[0][0] // M[1][0]
-        M[0] = [M[0][k] - q * M[1][k] for k in range(2)]
-        M[0], M[1] = M[1], M[0]
-    if M[0][0] < 0:
-        M[0] = [-x for x in M[0]]
-    if M[1][1] < 0:
-        M[1] = [-x for x in M[1]]
-    if M[1][1]:
-        M[0][1] %= M[1][1]
-    return (M[0][0], M[0][1], M[1][1])
+def gauss_reduce(T: np.ndarray) -> np.ndarray:
+    """Lagrange-Gauss reduction of the supercell basis (rows of T, in units of
+    a1, a2) so that the rows are the two shortest independent vectors."""
+    G = BRAVAIS @ BRAVAIS.T
+    u, v = T[0].astype(int), T[1].astype(int)
+
+    def norm2(x):
+        return float(x @ G @ x)
+
+    if norm2(u) > norm2(v):
+        u, v = v, u
+    while True:
+        m = int(round(float(u @ G @ v) / norm2(u)))
+        v = v - m * u
+        if norm2(v) >= norm2(u):
+            break
+        u, v = v, u
+    R = np.array([u, v])
+    if np.linalg.det(R) < 0:
+        R[1] = -R[1]
+    return R
