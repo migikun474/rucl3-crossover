@@ -124,8 +124,9 @@ def test_time_domain_spectrum_matches_lehmann():
 
 
 def test_degenerate_ground_state_is_averaged():
-    """The 14-site C3 torus has a two-fold ground state for the alpha-RuCl3
-    parameters; averaging over it restores translation and C3 symmetry."""
+    """The 14-site C3 torus has a degenerate ground level (two-fold for this
+    set, six-fold for Winter et al.); averaging over it restores translation
+    and C3 symmetry."""
     from rucl3.classical.exact import ground_manifold
     cl = best_cluster(14)
     m = SpinModel(cl, GENERIC.scaled(J3=0.9))
