@@ -61,12 +61,14 @@ def main(argv=None):
     Ns = range(16, a.Nmax + 1, 4)
     for order in (2, 4):
         try:
-            tf = fit_trotter(scan, order)
+            tf = fit_trotter(scan, order, conservative=True)
+            free = fit_trotter(scan, order) if len({r["N"] for r in scan}) > 1 else None
         except ValueError as e:
             print(f"order {order}: {e}")
             continue
         out[f"trotter_fit_{order}"] = {**tf.spec.__dict__, "beta": tf.beta,
-                                       "rms": tf.rms_log_residual, "n": tf.n_points}
+                                       "rms": tf.rms_log_residual, "n": tf.n_points,
+                                       "free_alpha": free.spec.alpha if free else None}
         for perr in (1e-3, 1e-4):
             res = crossover(p, target, tf.spec, cfit, S_peak, Ns, perr, prep_of_N)
             k = (np.nonzero(res.N == res.N_star)[0] if res.N_star else [])
