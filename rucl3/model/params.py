@@ -44,7 +44,8 @@ PARAMETER_SETS: dict[str, ParameterSet] = {
     "ran2017": ParameterSet(
         "ran2017", J1=0.0, K=-6.8, G=9.5, Gp=0.0, J3=0.0,
         reference="K. Ran et al., Phys. Rev. Lett. 118, 107203 (2017)",
-        note="K-Gamma model fitted to spin waves",
+        note="K-Gamma model fitted to spin waves; K and Gamma confirmed from the abstract "
+             "(28 Oct 2026); the paper calls J small, set to 0 here; check the article number",
     ),
     "laurell2020": ParameterSet(
         "laurell2020", J1=-1.3, K=-15.1, G=10.1, Gp=-0.12, J3=0.9,

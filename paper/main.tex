@@ -159,11 +159,10 @@ use $N=\exactSizesWinter$ here; $N=20$ and $24$ are run separately
 \textbf{Method.} The model has no $U(1)$ symmetry, so we work in the full
 $2^N$-dimensional space with a matrix-free Hamiltonian. The ground state is
 found by two-pass Lanczos; symmetric clusters have degenerate ground
-levels (\degenWinterNFourteen-fold for $N=14$ and
-\degenWinterNEighteen-fold for $N=18$ with the \mainSet{} parameters,
-consistent with the three zigzag orientations and time reversal), which we
-resolve by deflated Lanczos and average over, since a single Lanczos vector
-breaks translation symmetry. Each $S_j^b|0\rangle$ is propagated by
+levels (\degenWinterNFourteen-fold for $N=14$, matching three zigzag
+orientations times time reversal, and \degenWinterNEighteen-fold for $N=18$
+with the \mainSet{} parameters), which we resolve by deflated Lanczos and
+average over, since a single Lanczos vector breaks translation symmetry. Each $S_j^b|0\rangle$ is propagated by
 short-iterative Lanczos~\cite{park1986} with an a-posteriori error bound
 of $10^{-9}$, and overlaps with $S_i^a$ give all correlators at each
 time; translation invariance reduces the reference sites $j$ to one per
@@ -233,10 +232,11 @@ $p=10^{-3}$ and $10^{-4}$, and a total error budget of 1\% per circuit;
 rotation synthesis~\cite{ross2016} and magic-state factories are included
 by the estimator. One machine runs all circuits sequentially.
 
-\textbf{Ground-state preparation.} We cost phase-estimation projection
-from a product state with overlap $\gamma$: an evolution time
-$2\pi\ln(1/\delta)/\Delta$ per attempt with controlled evolution at twice
-the cost, and $1/\gamma^2$ attempts per shot~\cite{lin2020}. From exact
+\textbf{Ground-state preparation.} We use a simple model of
+phase-estimation projection from a product state with overlap $\gamma$:
+an evolution time $2\pi\ln(1/\delta)/\Delta$ per attempt with controlled
+evolution at twice the cost, and $1/\gamma^2$ attempts per shot;
+near-optimal methods reduce the latter to $1/\gamma$~\cite{lin2020}. From exact
 results we take the mean gap $\Delta=\prepGapWinter$\,meV and the best
 product-state overlap, optimised over all single-spin directions, which
 decays as $\gamma\propto e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$.
@@ -284,8 +284,8 @@ the main lever.
 \NstarEpsOneWinterB--\NstarEpsOneWinterA. A classical machine $10^2$ or
 $10^4$ times faster than our workstation, such as a large cluster, moves
 it to \NstarFastHundredWinterB{} and
-\NstarFastTenThousandWinterB--\NstarFastTenThousandWinterA{}, since each
-factor of two in classical speed costs one spin. \verify{add the spread
+\NstarFastTenThousandWinterB--\NstarFastTenThousandWinterA{}: each factor of two in
+classical speed costs roughly one spin. \verify{add the spread
 across parameter sets once the Ran \emph{et al.} runs finish.}
 
 \begin{figure}[t]
