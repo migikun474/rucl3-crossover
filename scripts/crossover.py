@@ -82,7 +82,8 @@ def main(argv=None):
             out["curves"].append(curve)
             print(f"order {order} p={perr:g}: N*={res.N_star} (with prep {res.N_star_prep})",
                   flush=True)
-    path = data / f"crossover_{a.params}.json"
+    suffix = "" if (a.eps == DEFAULT.eps and a.dE == DEFAULT.dE) else f"_dE{a.dE:g}_eps{a.eps:g}"
+    path = data / f"crossover_{a.params}{suffix}.json"
     path.write_text(json.dumps(out, indent=1))
     print(f"wrote {path}")
 
