@@ -112,7 +112,8 @@ axes. Our main set is that of Winter \emph{et al.}~\cite{winter2017},
 $(J_1,K,\Gamma,J_3)=(-0.5,-5.0,2.5,0.5)$\,meV
 \verify{check values and convention against the paper}; the
 $K$--$\Gamma$ model of Ran \emph{et al.}, $(K,\Gamma)=(-6.8,9.5)$\,meV~\cite{ran2017},
-serves as a second set \verify{add Laurell--Okamoto~\cite{laurell2020} if time allows}.
+serves as a second set with a larger energy scale
+\verify{add Laurell--Okamoto~\cite{laurell2020} if time allows}.
 
 \textbf{Observable.} We compute
 \begin{equation}
@@ -257,10 +258,10 @@ $N^22^N$. Quantum: second-order Trotter circuits, surface code, without
 
 \begin{table}[t]
 \centering
-\caption{Fault-tolerant resources at the crossover (\mainSet{} set,
-second-order Trotter, $\delta E=\dE$\,meV, $\eps=\epsPct\%$). $r$: Trotter
-steps for the longest time; $d$: code distance; runtime excludes
-ground-state preparation.}
+\caption{Fault-tolerant resources at the crossover for the two
+parameter sets (second-order Trotter, $\delta E=\dE$\,meV,
+$\eps=\epsPct\%$). $r$: Trotter steps for the longest time; $d$: code
+distance; runtime excludes ground-state preparation.}
 \label{tab:resources}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
@@ -285,8 +286,16 @@ the main lever.
 $10^4$ times faster than our workstation, such as a large cluster, moves
 it to \NstarFastHundredWinterB{} and
 \NstarFastTenThousandWinterB--\NstarFastTenThousandWinterA{}: each factor of two in
-classical speed costs roughly one spin. \verify{add the spread
-across parameter sets once the Ran \emph{et al.} runs finish.}
+classical speed costs roughly one spin. The Ran \emph{et al.} set
+(exact data for $N=\exactSizesRan$) has a Trotter prefactor
+$A=\trotARan$, over twenty times that of the \mainSet{} set, and needs
+\stepsRanA{} instead of \stepsWinterA{} steps, yet it crosses over at the
+same $N^*=\NstarRanB$--$\NstarRanA$: the step count grows only as
+$A^{1/2}$, and the shot and circuit counts, which dominate, barely change.
+Its slower overlap decay ($\gamma\propto e^{-\prepKappaRan N}$) moves the
+crossover with ground-state preparation down to $N^*=\NstarPrepRanB$, and
+at $p=10^{-3}$ it needs \physQRanA{} physical qubits, because longer circuits
+need more magic-state factories (Table~\ref{tab:resources}).
 
 \begin{figure}[t]
 \centering
