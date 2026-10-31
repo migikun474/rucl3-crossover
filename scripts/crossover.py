@@ -25,6 +25,23 @@ from rucl3.quantum.resources import GroundStatePrep  # noqa: E402
 from rucl3.target import AccuracyTarget, DEFAULT  # noqa: E402
 
 
+def inelastic_peak(data, params, dE):
+    """Reference spectral weight for the accuracy target: the smallest, over
+    the measured cluster sizes, of the peak of sum_a S^aa(q, omega) at
+    omega > 2 dE.  The quasi-elastic weight below that (on tori that fit the
+    zigzag order it piles up at the M point) is excluded, as in an INS
+    analysis of the inelastic spectrum; taking the smallest size-wise peak is
+    conservative (more shots)."""
+    by_N = {}
+    for f in sorted(data.glob(f"exact_{params}_N*.npz")):
+        d = np.load(f)
+        S = np.einsum("qaaw->qw", d["Sqw"]).real
+        by_N[int(f.stem.split("_N")[-1])] = float(S[:, d["omegas"] > 2 * dE].max())
+    if not by_N:
+        raise FileNotFoundError(f"no exact spectra for {params}")
+    return min(by_N.values()), by_N
+
+
 def prep_model(rows):
     """Gap: mean over sizes (finite-size gaps do not extrapolate reliably).
     Overlap: gamma(N) = gamma0 exp(-kappa N), fitted to the best product state."""
@@ -51,12 +68,13 @@ def main(argv=None):
 
     exact = [r for r in read_jsonl(data / "exact_runs.jsonl") if r["params"] == a.params]
     cfit = fit_classical(exact)
-    S_peak = max(exact, key=lambda r: r["N"])["S_peak"]
+    S_peak, S_peak_by_N = inelastic_peak(data, a.params, a.dE)
     scan = [r for r in read_jsonl(data / "trotter_scan.jsonl") if r["params"] == a.params]
     prep_of_N, prep_info = prep_model(
         [r for r in read_jsonl(data / "gs_prep.jsonl") if r["params"] == a.params])
 
     out = {"params": a.params, "dE": a.dE, "eps": a.eps, "T": target.T, "S_peak": S_peak,
+           "S_peak_by_N": S_peak_by_N,
            "classical_fit": cfit.__dict__, "prep": prep_info, "curves": []}
     Ns = range(16, a.Nmax + 1, 2)
     for order in (2, 4):

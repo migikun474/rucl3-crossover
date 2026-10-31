@@ -148,6 +148,25 @@ def main(argv=None):
     m("qpiaiFid", f"{100 * QPIAI_TWO_QUBIT_FIDELITY:.0f}")
     m("mainSet", first)
 
+    # ranges over the two error rates (B = 1e-4 first), collapsed when equal,
+    # and over all parameter sets
+    def rng(vals):
+        nums = sorted({int(v) for v in vals if v.isdigit()})
+        if not nums:
+            return "$>$100"
+        return str(nums[0]) if len(nums) == 1 else f"{nums[0]}\\text{{--}}{nums[-1]}"  # works in math too
+
+    for kind in ("Nstar", "NstarPrep", "NstarEpsOne", "NstarFastHundred", "NstarFastTenThousand"):
+        every = []
+        for pname in a.params:
+            L = LABEL[pname]
+            vals = [macros[k] for k in (f"{kind}{L}B", f"{kind}{L}A") if k in macros]
+            if vals:
+                m(f"{kind}Range{L}", rng(vals))
+                every += vals
+        if every:
+            m(f"{kind}RangeAll", rng(every))
+    m("nSets", {1: "one", 2: "two", 3: "three", 4: "four"}[len(a.params)])
     bad = [k for k in macros if not k.isalpha()]
     if bad:
         raise ValueError(f"LaTeX macro names must be letters only: {bad}")
