@@ -251,3 +251,50 @@ def gauss_reduce(T: np.ndarray) -> np.ndarray:
     if np.linalg.det(R) < 0:
         R[1] = -R[1]
     return R
+
+
+class Cylinder:
+    """Honeycomb cylinder for MPS: L unit cells along a1 (open ends) times W
+    cells around the circumference W a2 (periodic).
+
+    Sites are numbered along the MPS path, circumference first:
+    A(n1, n2) -> 2 (n1 W + n2), B(n1, n2) -> 2 (n1 W + n2) + 1, so every bond
+    joins sites at most ~2W apart in the chain.  Bonds are generated per cell
+    exactly as on the torus; bonds that would leave an open end are dropped.
+    For W = 2 two third-neighbour bonds of each site map onto the same pair
+    (they are summed, which is the correct Hamiltonian of that cylinder).
+    Exposes the same attributes as :class:`Cluster` used by SpinModel.
+    """
+
+    def __init__(self, W: int, L: int):
+        self.W, self.L = W, L
+        self.ncells = W * L
+        self.cells = np.array([(n1, n2) for n1 in range(L) for n2 in range(W)])
+        self.sublattice = np.tile([0, 1], self.ncells)
+        R = self.cells @ BRAVAIS
+        self.positions = np.empty((self.N, 2))
+        self.positions[0::2] = R
+        self.positions[1::2] = R + DELTA["z"]
+        self.nn_bonds, self.j3_bonds = [], []
+        for k, (n1, n2) in enumerate(self.cells):
+            for off, label in NN_BONDS:
+                j = self._site(n1 + off[0], n2 + off[1])
+                if j is not None:
+                    self.nn_bonds.append(Bond(2 * k, 2 * j + 1, label))
+            for off in J3_BONDS:
+                j = self._site(n1 + off[0], n2 + off[1])
+                if j is not None:
+                    self.j3_bonds.append(Bond(2 * k, 2 * j + 1, "3"))
+
+    @property
+    def N(self) -> int:
+        return 2 * self.ncells
+
+    def _site(self, n1, n2):
+        if not 0 <= n1 < self.L:
+            return None
+        return n1 * self.W + (n2 % self.W)
+
+    @property
+    def circumference(self) -> np.ndarray:
+        return self.W * A2

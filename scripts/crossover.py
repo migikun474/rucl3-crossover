@@ -20,6 +20,7 @@ import rucl3  # noqa: E402,F401
 import numpy as np  # noqa: E402
 from rucl3.analysis.crossover import crossover, india_gap  # noqa: E402
 from rucl3.analysis.fits import fit_classical, fit_trotter, read_jsonl  # noqa: E402
+from rucl3.analysis.mps_fit import fit_mps  # noqa: E402
 from rucl3.model import params as P  # noqa: E402
 from rucl3.quantum.resources import GroundStatePrep  # noqa: E402
 from rucl3.target import AccuracyTarget, DEFAULT  # noqa: E402
@@ -73,8 +74,15 @@ def main(argv=None):
     prep_of_N, prep_info = prep_model(
         [r for r in read_jsonl(data / "gs_prep.jsonl") if r["params"] == a.params])
 
+    mps_model = None
+    if (data / "mps" / "runs.jsonl").exists():
+        try:
+            mps_model = fit_mps(data / "mps", a.params, a.eps, a.dE)
+        except (ValueError, FileNotFoundError) as e:
+            print(f"MPS: {e}")
     out = {"params": a.params, "dE": a.dE, "eps": a.eps, "T": target.T, "S_peak": S_peak,
            "S_peak_by_N": S_peak_by_N,
+           "mps_fit": mps_model.__dict__ if mps_model else None,
            "classical_fit": cfit.__dict__, "prep": prep_info, "curves": []}
     Ns = range(16, a.Nmax + 1, 2)
     for order in (2, 4):
@@ -97,9 +105,14 @@ def main(argv=None):
                      "physical_qubits": res.physical_qubits.tolist(),
                      "N_star": res.N_star, "N_star_prep": res.N_star_prep,
                      "india": gap.__dict__ if gap else None}
+            if mps_model:
+                mps_s = mps_model.seconds(res.N, target)
+                below = np.nonzero(res.quantum_s < mps_s)[0]
+                curve["mps_s"] = mps_s.tolist()
+                curve["N_star_mps"] = int(res.N[below[0]]) if len(below) else None
             out["curves"].append(curve)
-            print(f"order {order} p={perr:g}: N*={res.N_star} (with prep {res.N_star_prep})",
-                  flush=True)
+            print(f"order {order} p={perr:g}: N*={res.N_star} (with prep {res.N_star_prep})"
+                  + (f", vs MPS {curve['N_star_mps']}" if mps_model else ""), flush=True)
     suffix = "" if (a.eps == DEFAULT.eps and a.dE == DEFAULT.dE) else f"_dE{a.dE:g}_eps{a.eps:g}"
     path = data / f"crossover_{a.params}{suffix}.json"
     path.write_text(json.dumps(out, indent=1))
