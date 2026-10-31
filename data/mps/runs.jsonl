@@ -1,2 +1,5 @@
 {"params": "winter2017", "W": 2, "L": 4, "N": 16, "chi": 16, "mpo_chi": 17, "E0": -29.045573079884242, "seconds": 278.75780869799996, "n_times": 169, "substeps": 2}
 {"params": "winter2017", "W": 2, "L": 4, "N": 16, "chi": 32, "mpo_chi": 17, "E0": -29.045573079884242, "seconds": 412.1825563750001, "n_times": 169, "substeps": 2}
+{"params": "winter2017", "W": 2, "L": 4, "N": 16, "chi": 64, "mpo_chi": 17, "E0": -29.045573079884242, "seconds": 740.5985870979998, "n_times": 169, "substeps": 2}
+{"params": "winter2017", "W": 3, "L": 3, "N": 18, "chi": 16, "mpo_chi": 26, "E0": -31.791134995492207, "seconds": 366.2590456810003, "n_times": 169, "substeps": 2}
+{"params": "winter2017", "W": 3, "L": 3, "N": 18, "chi": 32, "mpo_chi": 26, "E0": -31.791134995492207, "seconds": 533.6831085899998, "n_times": 169, "substeps": 2}
