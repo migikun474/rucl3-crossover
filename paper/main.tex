@@ -31,7 +31,8 @@ toy models at an arbitrary accuracy. We ask the question for a real
 material and an accuracy fixed by experiment: the dynamical structure
 factor $S(\mathbf q,\omega)$ of the Kitaev magnet \RuCl, resolved to the
 energy resolution of inelastic neutron scattering. We measure the cost of
-exact classical simulation on clusters of up to 18 spins, measure the
+exact classical simulation on clusters of up to 18 spins and of
+matrix-product-state time evolution on cylinders, measure the
 Trotter error of the corresponding quantum circuits against the exact
 results, and feed the logical circuits to a surface-code resource
 estimator. Across \nSets{} published exchange models, a fault-tolerant
@@ -91,7 +92,9 @@ resolution: the time window, total simulated time and spectral tolerance
 all follow from one measured number (Sec.~\ref{sec:target}). (ii) Measured
 classical cost of exact time-domain simulation of $S(\mathbf q,\omega)$ on
 periodic clusters, including the degenerate ground manifolds that
-symmetric clusters carry (Sec.~\ref{sec:classical}). (iii) Trotter errors
+symmetric clusters carry, and of matrix-product-state time evolution, whose
+bond dimension we measure against exact results
+(Sec.~\ref{sec:classical}). (iii) Trotter errors
 measured on the experimental observable itself, for the exact circuit whose
 gates are counted, and a full surface-code resource estimate with
 ground-state preparation as a separate line item (Sec.~\ref{sec:quantum}).
@@ -185,6 +188,26 @@ N2^N$ times a number of products $\propto\|H\|T\propto NT$); a free
 exponential fit gives a base of \classBaseWinter. Fig.~\ref{fig:spectrum}
 shows the computed spectrum for $N=18$.
 
+\textbf{Matrix product states.} We also evolve $S^z_j|0\rangle$ with
+two-site TDVP~\cite{haegeman2016} in TeNPy~\cite{hauschild2018}, from a DMRG
+ground state, on cylinders of circumference $W=2$ and $3$ unit cells (16
+and 18 spins). The MPO is built from the same bond list as the exact code,
+and with full bond dimension the two agree to $10^{-9}$. For each bond
+dimension $\chi$ we find the longest window $T'$ over which the error of
+the resolution-convolved spectrum, bounded by summing site-resolved errors
+against the exact result, stays below $\eps$. For $W=2$, $\chi=16$, 32, 64
+and 128 reach $T'=\mpsReachWinterWTwoChiSixteen$,
+\mpsReachWinterWTwoChiThirtyTwo, \mpsReachWinterWTwoChiSixtyFour{} and
+\mpsReachWinterWTwoChiOneTwentyEight\,meV$^{-1}$ (the full window); for
+$W=3$, $\chi=32$ and 64 reach only \mpsReachWinterWThreeChiThirtyTwo{} and
+\mpsReachWinterWThreeChiSixtyFour\,meV$^{-1}$. Fitting
+$\ln\chi=c_W+s_WT'$ gives growth rates $s_W=\mpsSWinterWTwo$ and
+\mpsSWinterWThree\,meV, so the full window at $W=3$ would already need
+$\chi\approx\mpsChiWThreeWinter$. We extrapolate the cost, measured per
+step as $\propto N D\chi^3$ ($D$ the MPO bond dimension), to cylinders with
+$N=2W^2$, with $s_W$ and $c_W$ linear in $W$ and six evolutions (three
+components, two sublattices) per spectrum.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig2_spectrum_winter2017_N18.pdf}
@@ -261,8 +284,9 @@ This line item is reported separately because it is the least certain.
 \caption{Wall-clock time to obtain $S(\mathbf q,\omega)$ at the
 experimental resolution and accuracy, against the number of spins.
 Classical: exact simulation, measured for $N\le18$ and extrapolated as
-$N^22^N$. Quantum: second-order Trotter circuits, surface code, without
-(solid) and with (dashed) ground-state preparation.}
+$N^22^N$, and MPS time evolution extrapolated from cylinders with $W=2,3$
+(it leaves the plot near $N=30$). Quantum: second-order Trotter circuits,
+surface code, without (solid) and with (dashed) ground-state preparation.}
 \label{fig:crossover}
 \end{figure}
 
@@ -292,7 +316,12 @@ the same $N^*$, because fewer steps are offset by five times as many
 rotations per step. Including ground-state preparation moves the
 crossover to $N^*=\NstarPrepRangeWinter$, because the product-state
 overlap shrinks exponentially; better initial states~\cite{lin2020} are
-the main lever.
+the main lever. The extrapolated MPS cost lies above the exact cost at
+every size we consider (Fig.~\ref{fig:crossover}), so the quantum
+computer beats it from the smallest size on, but it is never the cheaper
+classical method: with the long time window that the neutron resolution
+demands, entanglement growth rather than system size limits MPS, and the
+crossover is set by exact simulation.
 
 \textbf{Sensitivity.} \emph{Accuracy:} $\eps=1\%$ instead of
 \epsPct\% moves $N^*$ to \NstarEpsOneRangeWinter. \emph{Classical
@@ -337,15 +366,16 @@ count roughly sixfold (Table~\ref{tab:resources}).
 
 \section{Limitations and outlook}
 
-\emph{Classical baseline.} Exact simulation is the weakest credible
-classical method, so our $N^*$ is a lower bound on where advantage could
-begin. Translation symmetry would save a further factor $\sim N/2$ and
-continued-fraction Lanczos~\cite{gagliano1987} avoids time stepping
-altogether for a fixed broadening; matrix-product-state time
-evolution~\cite{haegeman2016,hauschild2018} on cylinders, PEPS,
+\emph{Classical baseline.} Exact simulation is not the strongest
+conceivable classical method, so our $N^*$ is a lower bound on where
+advantage could begin. Translation symmetry would save a further factor
+$\sim N/2$, and continued-fraction Lanczos~\cite{gagliano1987} avoids time
+stepping altogether for a fixed broadening. Our MPS estimate rests on two
+short cylinders, a bound rather than the momentum-resolved error, and a
+linear fit of $\ln\chi$ in time and width, so it is crude; PEPS,
 time-dependent variational Monte Carlo and neural quantum states were not
-run. Each could push $N^*$ up; long-time dynamics in two dimensions is
-where they struggle most. \emph{Extrapolation.} Classical costs and Trotter errors are
+run. Each could push $N^*$ up, although long-time dynamics in two
+dimensions is where they struggle most. \emph{Extrapolation.} Classical costs and Trotter errors are
 extrapolated from $N\le18$ (\mainSet{}) or $N\le16$ (the other sets); the
 absence of an $N$ trend in the Trotter error rests on few sizes with strong
 finite-size effects, and so does the reference peak $S_{\max}$, which

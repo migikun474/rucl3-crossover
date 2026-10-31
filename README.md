@@ -26,7 +26,7 @@ neutron resolution dE ──► window w(t), total time T, accuracy eps
 | --- | --- |
 | `rucl3/model/` | honeycomb tori (`lattice.py`), parameter sets (`params.py`), Hamiltonian (`hamiltonian.py`) |
 | `rucl3/target.py` | resolution dE → Gaussian window, T, time grid |
-| `rucl3/classical/` | exact Lanczos + Krylov baseline (`exact.py`), S(q, ω) (`spectrum.py`) |
+| `rucl3/classical/` | exact Lanczos + Krylov baseline (`exact.py`), MPS/TDVP baseline (`mps.py`), S(q, ω) (`spectrum.py`) |
 | `rucl3/quantum/` | Pauli-rotation Trotter circuits (`trotter.py`), fault-tolerant cost (`resources.py`) |
 | `rucl3/analysis/` | Trotter and classical fits (`fits.py`), crossover and India mapping (`crossover.py`) |
 | `scripts/` | runnable entry points (below) |
