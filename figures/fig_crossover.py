@@ -62,6 +62,8 @@ def main(argv=None):
     for v, lab in [(3600, "1 h"), (86400 * 30, "1 month"), (YEAR * 1e3, "1000 yr")]:
         ax.axhline(v, color=GRID, lw=0.8, zorder=0)
         ax.text(xmax, v * 1.6, lab, color=INK2, fontsize=6, ha="right", va="bottom")
+    ax.set_ylim(10, 1e32)  # the extrapolated MPS curve leaves the top of the plot
+    ax.set_yticks([1e2, 1e8, 1e14, 1e20, 1e26, 1e32])
     ax.set_xlabel("number of spins $N$")
     ax.set_ylabel("wall-clock time (s)")
     ax.spines[["top", "right"]].set_visible(False)
