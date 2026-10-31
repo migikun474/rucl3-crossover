@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 
 # categorical slots 1-3 of the reference palette (light mode, print)
-COLOR = {"classical": "#2a78d6", 1e-3: "#eb6834", 1e-4: "#1baf7a"}
+COLOR = {"classical": "#2a78d6", 1e-3: "#eb6834", 1e-4: "#1baf7a", "mps": "#6250d6"}
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 YEAR = 3.156e7
 
@@ -39,6 +39,8 @@ def main(argv=None):
     c0 = curves[0]
     ax.semilogy(c0["N"], c0["classical_s"], color=COLOR["classical"], lw=2,
                 label="classical (exact)")
+    if "mps_s" in c0:
+        ax.semilogy(c0["N"], c0["mps_s"], color=COLOR["mps"], lw=2, label="classical (MPS, extrap.)")
     for c in curves:
         col = COLOR[c["physical_error"]]
         ax.semilogy(c["N"], c["quantum_s"], color=col, lw=2,
