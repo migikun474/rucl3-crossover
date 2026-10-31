@@ -29,7 +29,8 @@ LABEL = {"winter2017": "Winter", "ran2017": "Ran", "laurell2020": "Laurell", "ki
 
 
 WORDS = {8: "Eight", 12: "Twelve", 14: "Fourteen", 16: "Sixteen", 18: "Eighteen",
-         20: "Twenty", 24: "TwentyFour"}
+         20: "Twenty", 24: "TwentyFour", 32: "ThirtyTwo", 64: "SixtyFour",
+         128: "OneTwentyEight", 256: "TwoFiftySix"}
 
 
 def sig(x, n=2):
@@ -82,6 +83,27 @@ def main(argv=None):
         m(f"trotNpts{L}", str(tf.n_points))
         fa = d.get(f"trotter_fit_{a.order}", {}).get("free_alpha")
         m(f"trotFreeAlpha{L}", f"{fa:.2f}" if fa is not None else "--")
+        mf = d.get("mps_fit")
+        if mf:
+            from rucl3.analysis.mps_fit import MPSCostModel
+            mm = MPSCostModel(**mf)
+            for W in (2, 3):
+                m(f"mpsS{L}W{WORDS.get(W, W) if W > 3 else ['', '', 'Two', 'Three'][W]}",
+                  f"{mf['s'][0] + mf['s'][1] * W:.2f}")
+            for pt in mf["points"]:
+                if pt["T_reach"] > 0:
+                    m(f"mpsReach{L}W{['', '', 'Two', 'Three'][pt['W']]}Chi{WORDS.get(pt['chi'], 'X')}",
+                      f"{pt['T_reach']:.1f}")
+            Nm = None
+            for c in d["curves"]:
+                if c["order"] == a.order and c.get("N_star_mps"):
+                    Nm = c["N_star_mps"]
+            if Nm:
+                W = np.sqrt(Nm / 2)
+                m(f"mpsChiAtNstar{L}", sig(mm.chi_needed(W, target.T)))
+                m(f"mpsWAtNstar{L}", f"{W:.1f}")
+            m(f"mpsChiWTwo{L}", sig(mm.chi_needed(2, target.T)))
+            m(f"mpsChiWThree{L}", sig(mm.chi_needed(3, target.T)))
         cf = d["classical_fit"]
         m(f"classBase{L}", f"{cf['base_free']:.2f}")
         if d["prep"]:
@@ -93,6 +115,8 @@ def main(argv=None):
             tag = "A" if c["physical_error"] == 1e-3 else "B"  # A: 1e-3, B: 1e-4
             Ns = c["N_star"]
             m(f"Nstar{L}{tag}", str(Ns) if Ns else "$>$100")
+            if "N_star_mps" in c:
+                m(f"NstarMPS{L}{tag}", str(c["N_star_mps"]) if c["N_star_mps"] else "$>$100")
             # classical machine faster by a factor f (cluster instead of one workstation)
             Narr, cs, qs = np.array(c["N"]), np.array(c["classical_s"]), np.array(c["quantum_s"])
             for f, word in [(1e2, "Hundred"), (1e4, "TenThousand")]:
@@ -156,7 +180,8 @@ def main(argv=None):
             return "$>$100"
         return str(nums[0]) if len(nums) == 1 else f"{nums[0]}\\text{{--}}{nums[-1]}"  # works in math too
 
-    for kind in ("Nstar", "NstarPrep", "NstarEpsOne", "NstarFastHundred", "NstarFastTenThousand"):
+    for kind in ("Nstar", "NstarPrep", "NstarEpsOne", "NstarFastHundred", "NstarFastTenThousand",
+                 "NstarMPS"):
         every = []
         for pname in a.params:
             L = LABEL[pname]
