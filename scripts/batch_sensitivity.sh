@@ -7,4 +7,4 @@ for N in 14 16; do
   python -W ignore scripts/run_exact.py --N $N --params $P
 done
 python -W ignore scripts/gs_prep_data.py --N 14 16 --params $P
-python -W ignore scripts/trotter_scan.py --N 14 16 --params $P --order 2 --steps 2 4
+python -W ignore scripts/trotter_scan.py --N 14 16 --params $P --order 2 --steps ${STEPS:-2 4}
