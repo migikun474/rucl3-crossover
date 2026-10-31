@@ -14,3 +14,5 @@ paper/*.fls
 paper/*.bbl
 paper/*.blg
 paper/build.log
+data/mps/*.npz
+data/mps/*.pkl
