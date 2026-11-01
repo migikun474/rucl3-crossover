@@ -8,6 +8,7 @@
 
 % Numbers generated from the data by scripts/make_numbers.py
 \input{numbers.tex}
+\input{sensitivity_numbers.tex}
 
 % Red notes mark what the authors still have to check or decide.
 % Every \verify must be resolved before submission (grep for it).
@@ -323,24 +324,42 @@ classical method: with the long time window that the neutron resolution
 demands, entanglement growth rather than system size limits MPS, and the
 crossover is set by exact simulation.
 
-\textbf{Sensitivity.} \emph{Accuracy:} $\eps=1\%$ instead of
-\epsPct\% moves $N^*$ to \NstarEpsOneRangeWinter. \emph{Classical
-hardware:} a classical machine $10^2$ or $10^4$ times faster than our
-workstation, such as a large cluster, moves it to
-\NstarFastHundredRangeWinter{} and \NstarFastTenThousandRangeWinter: each
-factor of two in classical speed costs roughly one spin. \emph{Model:}
-the Ran \emph{et al.} and Laurell--Okamoto sets (exact data for
+\begin{table}[t]
+\centering
+\caption{Sensitivity of the crossover: one assumption changed at a time
+from the baseline (\mainSet{} set, $\delta E=\dE$\,meV,
+$\eps=\epsPct\%$, second-order Trotter, nanosecond gates with
+$p=10^{-4}$, one classical workstation). Runtime and physical qubits are
+those of the quantum computer at $N^*$, without ground-state
+preparation.}
+\label{tab:sensitivity}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\input{table2.tex}
+\end{table}
+
+\textbf{Sensitivity.} Table~\ref{tab:sensitivity} varies one assumption at
+a time; across the full grid of \gridCount{} combinations (three parameter
+sets, three resolutions, four accuracies, four qubit models and both
+Trotter orders where measured) $N^*$ stays between \gridMin{} and
+\gridMax{} against one workstation. \emph{Experiment:} a tighter accuracy
+or a finer resolution moves $N^*$ by a few spins but changes the quantum
+run time at $N^*$ by orders of magnitude, from years at $\delta E=2$\,meV
+to millennia at $\eps=1\%$, because the shot count grows as $\eps^{-2}$ and
+the circuits lengthen with $T$. \emph{Quantum hardware:} the physical error
+rate sets the qubit count but hardly moves $N^*$; slow (microsecond)
+gates, as in trapped ions, make every shot about $1500$ times longer and
+push $N^*$ to the largest values in the grid. \emph{Classical hardware:}
+each factor of two in classical speed costs roughly one spin, so a large
+cluster $10^4$ times faster than our workstation moves $N^*$ by about 14.
+\emph{Model:} the Ran \emph{et al.} and Laurell--Okamoto sets (exact data for
 $N=\exactSizesRan$) have Trotter prefactors $A=\trotARan$ and
-\trotALaurell, twenty to thirty times that of the \mainSet{} set, and need
-\stepsRanA{} and \stepsLaurellA{} instead of \stepsWinterA{} steps, yet
-they cross over at $N^*=\NstarRangeRan$ and \NstarRangeLaurell: the step
-count grows only as $A^{1/2}$, and the circuit and shot counts, which
-dominate, barely change. Longer circuits need more magic-state factories,
-so at $p=10^{-3}$ these sets need \physQRanA{} and \physQLaurellA{}
-physical qubits (Table~\ref{tab:resources}). With only two sizes the
-overlap trend of these sets is not determined (for Laurell--Okamoto it
-even rises from $N=14$ to $16$), so we do not quote their crossover with
-ground-state preparation.
+\trotALaurell, twenty to thirty times that of the \mainSet{} set, yet cross
+over at nearly the same $N^*$: the step count grows only as $A^{1/2}$, and
+the circuit and shot counts, which dominate, barely change. With only two
+sizes the overlap trend of these sets is not determined (for
+Laurell--Okamoto it even rises from $N=14$ to $16$), so we quote the
+crossover with ground-state preparation for the \mainSet{} set only.
 
 \begin{figure}[t]
 \centering
