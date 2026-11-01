@@ -298,3 +298,14 @@ class Cylinder:
     @property
     def circumference(self) -> np.ndarray:
         return self.W * A2
+
+
+class Flake(Cylinder):
+    """Open honeycomb flake of L x W unit cells (open in both directions), for
+    small hardware experiments: no bond wraps around, so the coupling graph
+    is planar with maximum degree 3."""
+
+    def _site(self, n1, n2):
+        if not (0 <= n1 < self.L and 0 <= n2 < self.W):
+            return None
+        return n1 * self.W + n2
