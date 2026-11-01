@@ -10,6 +10,7 @@
 \input{numbers.tex}
 \input{sensitivity_numbers.tex}
 \input{india_numbers.tex}
+\input{ibm_numbers.tex}
 
 % Red notes mark what the authors still have to check or decide.
 % Every \verify must be resolved before submission (grep for it).
@@ -409,6 +410,37 @@ more than any of the doublings above. For India's roadmap this
 application therefore asks first for two-qubit errors near $10^{-4}$, and
 only then for qubit counts of order $10^4$--$10^5$, well beyond the
 2031 target.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../figures/fig5_hardware_fake_torino.pdf}
+\caption{Hardware check on 12 qubits: staggered magnetization after a
+N\'eel-state quench on a 12-spin flake (\mainSet{} couplings), from exact
+evolution, from the noiseless Trotter circuit, and from the same circuit
+transpiled to \texttt{ibm\_torino} and run on an emulator with that
+processor's published noise calibration (\hwShots{} shots per point; one
+Trotter step per $\hwStepT$\,meV$^{-1}$, \hwGatesStep--\hwGatesMax{}
+two-qubit gates). \verify{replace by the real-device run}}
+\label{fig:hardware}
+\end{figure}
+
+\textbf{Hardware check.} To see where present hardware stands, we run the
+same Trotter circuit on 12 qubits. The Hadamard-test protocol, with
+ground-state preparation, is far too deep, so we use the standard quench:
+the N\'eel state of an open 12-spin honeycomb flake with the \mainSet{}
+couplings is evolved and every spin is measured in the $z$ basis. The
+Qiskit~\cite{qiskit2024} circuit reproduces our state-vector Trotter
+evolution exactly. Transpiled to IBM's 133-qubit Heron processor
+\texttt{ibm\_torino} it needs \hwGatesStep{} two-qubit gates per Trotter
+step. With that processor's published noise calibration, an emulation and
+not yet a device run, the measured magnetizations deviate from the exact
+ones by up to \hwErrStep{} after a single step at
+$t=\hwStepT$\,meV$^{-1}$, only \hwFracT\% of the window $T$, whereas the
+noiseless circuit stays within \hwTrotErrMax; after \hwGatesMax{}
+two-qubit gates only \hwKeepLast\% of the staggered magnetization survives
+(Fig.~\ref{fig:hardware}). Without error correction the experiment-defined
+target is out of reach by orders of magnitude in circuit depth, which is
+why the crossover assumes a fault-tolerant machine.
 
 \section{Limitations and outlook}
 

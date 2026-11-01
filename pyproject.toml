@@ -17,6 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 mps = ["physics-tenpy>=1.0"]
 quantum = ["qdk>=1.30"]
+hardware = ["qiskit>=2.0", "qiskit-aer>=0.17", "qiskit-ibm-runtime>=0.40"]
 dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]

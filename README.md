@@ -27,7 +27,7 @@ neutron resolution dE ──► window w(t), total time T, accuracy eps
 | `rucl3/model/` | honeycomb tori (`lattice.py`), parameter sets (`params.py`), Hamiltonian (`hamiltonian.py`) |
 | `rucl3/target.py` | resolution dE → Gaussian window, T, time grid |
 | `rucl3/classical/` | exact Lanczos + Krylov baseline (`exact.py`), MPS/TDVP baseline (`mps.py`), S(q, ω) (`spectrum.py`) |
-| `rucl3/quantum/` | Pauli-rotation Trotter circuits (`trotter.py`), fault-tolerant cost (`resources.py`) |
+| `rucl3/quantum/` | Pauli-rotation Trotter circuits (`trotter.py`), fault-tolerant cost (`resources.py`), 12-qubit hardware check (`hardware.py`) |
 | `rucl3/analysis/` | Trotter and classical fits (`fits.py`), crossover and India mapping (`crossover.py`) |
 | `scripts/` | runnable entry points (below) |
 | `tests/` | unit tests (`pytest`) |
@@ -74,6 +74,19 @@ python scripts/run_exact.py --N 24 --params winter2017                 # long; ~
 Each run appends a JSON line to `data/exact_runs.jsonl`; commit that file
 (and keep the `.npz` if you want the N = 24 spectrum figure).  On a machine
 with less than 8 GB RAM add `--krylov-m 8`.
+
+### 12-qubit IBM hardware check
+
+```bash
+pip install -e ".[hardware]"
+python scripts/ibm_check.py --backend fake_torino          # noisy emulation, no account
+export IBM_QUANTUM_TOKEN=...                              # your token; never commit it
+python scripts/ibm_check.py --backend ibm_torino --shots 4000
+python figures/make_figures.py                            # Fig. 5 from data/ibm_<backend>.json
+```
+
+Fig. 5 and the numbers in the text use `data/ibm_fake_torino.json`; after a
+device run, point `fig5()` in `figures/make_figures.py` at the device file.
 
 ## Conventions
 
