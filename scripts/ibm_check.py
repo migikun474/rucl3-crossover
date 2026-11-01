@@ -45,7 +45,9 @@ def get_backend(name):
         from qiskit_aer import AerSimulator
         from qiskit_ibm_runtime import fake_provider
         fake = getattr(fake_provider, FAKES[name])()
-        return fake, AerSimulator.from_backend(fake), True
+        # noisy trajectories on a state vector; the default would pick a 4^N
+        # density matrix, which is far slower for circuits this deep
+        return fake, AerSimulator.from_backend(fake, method="statevector"), True
     from qiskit_ibm_runtime import QiskitRuntimeService
     token = os.environ.get("IBM_QUANTUM_TOKEN")
     service = (QiskitRuntimeService(channel="ibm_quantum_platform", token=token) if token
@@ -71,7 +73,7 @@ def main(argv=None):
 
     from qiskit import transpile
     circuits = [quench_circuit(model, t, k * a.spp) for k, t in enumerate(times)]
-    tqc = transpile(circuits, backend=target_backend, optimization_level=3,
+    tqc = transpile(circuits, backend=target_backend, optimization_level=2,
                     seed_transpiler=a.seed)
     two_q = [sum(v for k, v in c.count_ops().items() if k in ("cz", "ecr", "cx")) for c in tqc]
     depth = [c.depth() for c in tqc]
