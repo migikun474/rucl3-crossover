@@ -140,7 +140,10 @@ def estimate_physical(n_qubits: int, rotations: float, rotation_depth: float,
         "cczCount": 0,
         "measurementCount": 1,
     })
-    r = counts.estimate({"qubitParams": {"name": QUBIT_MODELS[physical_error]},
+    # a float selects the gate-based nanosecond model with that error rate; a
+    # string names any predefined estimator model (e.g. "qubit_gate_us_e4")
+    name = physical_error if isinstance(physical_error, str) else QUBIT_MODELS[physical_error]
+    r = counts.estimate({"qubitParams": {"name": name},
                          "qecScheme": {"name": "surface_code"},
                          "errorBudget": error_budget})
     pc = r["physicalCounts"]
