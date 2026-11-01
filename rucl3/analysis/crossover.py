@@ -47,7 +47,8 @@ def _first_below(N, q, c):
 def crossover(params: ParameterSet, target: AccuracyTarget, spec: TrotterSpec,
               classical: ClassicalFit, S_peak: float, Ns=range(24, 81, 4),
               physical_error: float = 1e-3, prep_of_N=None,
-              classical_free_exponent: bool = False) -> CrossoverResult:
+              classical_free_exponent: bool = False,
+              constraints: dict | None = None) -> CrossoverResult:
     """Classical and quantum wall-clock against N.
 
     ``prep_of_N(N) -> GroundStatePrep`` supplies the extrapolated gap and
@@ -59,7 +60,8 @@ def crossover(params: ParameterSet, target: AccuracyTarget, spec: TrotterSpec,
     for N in Ns:
         terms = list(_terms(params, int(N)))
         prep = prep_of_N(N) if prep_of_N else None
-        qc = quantum_cost(int(N), terms, target, spec, S_peak, physical_error, prep)
+        qc = quantum_cost(int(N), terms, target, spec, S_peak, physical_error, prep,
+                          constraints=constraints)
         cl_s.append(float(classical.seconds(N, target.T, free=classical_free_exponent)))
         q_s.append(qc.runtime_s)
         qp_s.append(qc.total_runtime_s)

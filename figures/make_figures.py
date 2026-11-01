@@ -147,33 +147,41 @@ def fig2(params, N):
 
 # ----------------------------------------------------------------------
 def fig4(params, order=2):
-    d = json.loads((ROOT / "data" / f"crossover_{params}.json").read_text())
-    curves = {c["physical_error"]: c for c in d["curves"] if c["order"] == order}
-    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 2.1), gridspec_kw={"width_ratios": [1.5, 1]})
-    # (a) physical qubits needed at N* against what India targets
-    labels, vals, cols = [], [], []
-    for perr, col in [(1e-3, C2), (1e-4, C3)]:
-        c = curves.get(perr)
-        if c and c["N_star"]:
-            i = c["N"].index(c["N_star"])
-            labels.append(f"$p$={perr:g}\n$N^*$={c['N_star']}")
-            vals.append(c["physical_qubits"][i])
-            cols.append(col)
-    y = np.arange(len(vals))
-    a.barh(y, vals, color=cols, height=0.5, zorder=2)
-    for yy, v in zip(y, vals):
-        a.text(v * 1.3, yy, f"{v / 1e6:.2g} M", va="center", fontsize=6, color=INK)
+    rows = json.loads((ROOT / "data" / "india.json").read_text())
+    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 2.3), gridspec_kw={"width_ratios": [1.6, 1]})
+    # (a) physical qubits at N* for both surface-code layouts; bar = main set,
+    # whisker = spread over the three parameter sets
+    bars = [(1e-3, "fast", C2, 1.0), (1e-3, "min", C2, 0.5),
+            (1e-4, "fast", C3, 1.0), (1e-4, "min", C3, 0.5)]
+    labels = []
+    for y, (perr, layout, col, alpha) in enumerate(bars):
+        rs = [r for r in rows if r["p"] == perr and r["layout"] == layout and r["qubits"]]
+        main = next(r for r in rs if r["params"] == params)
+        qs = [r["qubits"] for r in rs]
+        a.barh(y, main["qubits"], color=col, alpha=alpha, height=0.55, zorder=2)
+        a.plot([min(qs), max(qs)], [y, y], color=INK, lw=0.8, zorder=3)
+        for x in (min(qs), max(qs)):
+            a.plot([x, x], [y - 0.12, y + 0.12], color=INK, lw=0.8, zorder=3)
+        v = main["qubits"]
+        a.text(max(qs) * 1.35, y, f"{v / 1e6:.2g} M" if v >= 1e6 else f"{v / 1e3:.0f} k",
+               va="center", fontsize=6, color=INK)
+        ns = sorted({r["N_star"] for r in rs})
+        nlab = f"{ns[0]}" + (f"–{ns[-1]}" if len(ns) > 1 else "")
+        labels.append(f"$p=10^{{{int(np.log10(perr))}}}$, "
+                      f"{'time-opt.' if layout == 'fast' else 'qubit-min.'}\n"
+                      f"$N^*$={nlab}")
+    nb = len(bars)
     a.axvspan(*NQM_QUBITS, color=C1, alpha=0.18, lw=0, zorder=1)
-    a.text(NQM_QUBITS[1] * 1.3, len(vals) - 0.45, "NQM\ntarget", ha="left",
-           va="bottom", fontsize=6, color=INK)
+    a.text(NQM_QUBITS[1] * 1.3, nb - 0.45, "NQM\ntarget", ha="left", va="bottom",
+           fontsize=6, color=INK)
     a.axvline(25, color=INK2, lw=0.8, ls=(0, (2, 2)), zorder=1)
-    a.text(20, len(vals) - 0.62, "QpiAI 25 q", rotation=90, ha="right", va="bottom", fontsize=5.5,
+    a.text(20, nb - 0.62, "QpiAI 25 q", rotation=90, ha="right", va="bottom", fontsize=5.5,
            color=INK2)
     a.set_xscale("log")
     a.set_xlim(3, 3e8)
     a.set_xticks([1e1, 1e3, 1e5, 1e7])
-    a.set_ylim(-0.6, len(vals) + 0.2)
-    a.set_yticks(y, labels, fontsize=6)
+    a.set_ylim(-0.6, nb + 0.4)
+    a.set_yticks(range(nb), labels, fontsize=5.5)
     a.set_xlabel("physical qubits")
     a.spines[["top", "right"]].set_visible(False)
     a.set_title("(a) qubits at $N^*$", fontsize=7, loc="left", color=INK)
@@ -191,8 +199,8 @@ def fig4(params, order=2):
            ha="right", va="top")
     b.set_yscale("log")
     b.set_ylim(3e-5, 2e-1)
-    b.set_xlim(-0.5, 1.6)
-    b.set_xticks([0, 1], ["QpiAI\n(claimed)", "assumed\nat $N^*$"], fontsize=6)
+    b.set_xlim(-0.6, 1.7)
+    b.set_xticks([0, 1], ["QpiAI\n(claimed)", "assumed\nat $N^*$"], fontsize=5.5)
     b.set_ylabel("two-qubit error")
     b.spines[["top", "right"]].set_visible(False)
     b.set_title("(b) error rate", fontsize=7, loc="left", color=INK)

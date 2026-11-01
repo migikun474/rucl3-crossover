@@ -1,0 +1,98 @@
+[
+ {
+  "params": "winter2017",
+  "p": 0.001,
+  "layout": "fast",
+  "N_star": 38,
+  "qubits": 1708034,
+  "runtime_yr": 209.26481152624498
+ },
+ {
+  "params": "winter2017",
+  "p": 0.001,
+  "layout": "min",
+  "N_star": 46,
+  "qubits": 139670,
+  "runtime_yr": 31557.128279550732
+ },
+ {
+  "params": "winter2017",
+  "p": 0.0001,
+  "layout": "fast",
+  "N_star": 38,
+  "qubits": 248994,
+  "runtime_yr": 108.52387222724167
+ },
+ {
+  "params": "winter2017",
+  "p": 0.0001,
+  "layout": "min",
+  "N_star": 44,
+  "qubits": 29860,
+  "runtime_yr": 11745.57583893725
+ },
+ {
+  "params": "ran2017",
+  "p": 0.001,
+  "layout": "fast",
+  "N_star": 36,
+  "qubits": 5218354,
+  "runtime_yr": 54.79989539120623
+ },
+ {
+  "params": "ran2017",
+  "p": 0.001,
+  "layout": "min",
+  "N_star": 44,
+  "qubits": 149700,
+  "runtime_yr": 15544.07296794747
+ },
+ {
+  "params": "ran2017",
+  "p": 0.0001,
+  "layout": "fast",
+  "N_star": 36,
+  "qubits": 413586,
+  "runtime_yr": 28.431971771835805
+ },
+ {
+  "params": "ran2017",
+  "p": 0.0001,
+  "layout": "min",
+  "N_star": 42,
+  "qubits": 28892,
+  "runtime_yr": 5511.55524675745
+ },
+ {
+  "params": "laurell2020",
+  "p": 0.001,
+  "layout": "fast",
+  "N_star": 38,
+  "qubits": 3535314,
+  "runtime_yr": 558.3029932587598
+ },
+ {
+  "params": "laurell2020",
+  "p": 0.001,
+  "layout": "min",
+  "N_star": 46,
+  "qubits": 177070,
+  "runtime_yr": 100592.97660745056
+ },
+ {
+  "params": "laurell2020",
+  "p": 0.0001,
+  "layout": "fast",
+  "N_star": 38,
+  "qubits": 597474,
+  "runtime_yr": 269.70049141454774
+ },
+ {
+  "params": "laurell2020",
+  "p": 0.0001,
+  "layout": "min",
+  "N_star": 44,
+  "qubits": 34122,
+  "runtime_yr": 38362.61003017573
+ }
+]

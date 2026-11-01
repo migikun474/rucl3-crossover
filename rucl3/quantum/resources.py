@@ -129,8 +129,13 @@ class GroundStatePrep:
 # estimator
 # ----------------------------------------------------------------------
 def estimate_physical(n_qubits: int, rotations: float, rotation_depth: float,
-                      physical_error: float = 1e-3, error_budget: float = 1e-2) -> dict:
-    """Physical qubits and runtime (seconds) for one shot, from qdk.estimator."""
+                      physical_error: float = 1e-3, error_budget: float = 1e-2,
+                      constraints: dict | None = None) -> dict:
+    """Physical qubits and runtime (seconds) for one shot, from qdk.estimator.
+
+    ``constraints`` is passed to the estimator; {"maxTFactories": 1} gives the
+    qubit-minimal layout (one magic-state factory, longer run time) instead
+    of the default time-optimal one."""
     from qdk.estimator import LogicalCounts
     counts = LogicalCounts({
         "numQubits": int(n_qubits),
@@ -145,7 +150,8 @@ def estimate_physical(n_qubits: int, rotations: float, rotation_depth: float,
     name = physical_error if isinstance(physical_error, str) else QUBIT_MODELS[physical_error]
     r = counts.estimate({"qubitParams": {"name": name},
                          "qecScheme": {"name": "surface_code"},
-                         "errorBudget": error_budget})
+                         "errorBudget": error_budget,
+                         "constraints": constraints or {}})
     pc = r["physicalCounts"]
     return {
         "physical_qubits": pc["physicalQubits"],
@@ -175,7 +181,8 @@ class QuantumCost:
 def quantum_cost(N: int, terms, target: AccuracyTarget, spec: TrotterSpec,
                  S_peak: float, physical_error: float = 1e-3,
                  prep: GroundStatePrep | None = None, n_time_samples: int = 6,
-                 error_budget: float = 1e-2, eps_split: float = 0.5) -> QuantumCost:
+                 error_budget: float = 1e-2, eps_split: float = 0.5,
+                 constraints: dict | None = None) -> QuantumCost:
     """Total wall-clock to measure S(q, omega) to target.eps.
 
     eps is split into Trotter (eps_split) and shot noise (1 - eps_split).
@@ -198,7 +205,8 @@ def quantum_cost(N: int, terms, target: AccuracyTarget, spec: TrotterSpec,
     per_shot = []
     for t in sample_t:
         r = spec.steps(N, t, T, eps_trot)
-        est = estimate_physical(N + 1, rot_step * r, depth_step * r, physical_error, error_budget)
+        est = estimate_physical(N + 1, rot_step * r, depth_step * r, physical_error, error_budget,
+                                 constraints)
         per_shot.append({"t": t, "steps": r, **est})
 
     # runtime per shot is linear in t; interpolate over the full time grid
@@ -211,7 +219,8 @@ def quantum_cost(N: int, terms, target: AccuracyTarget, spec: TrotterSpec,
     prep_extra = 0.0
     if prep is not None:
         # every shot needs a fresh ground state: 1/gamma^2 prep attempts each
-        pe = estimate_physical(N + 1, prep_rot, prep_depth, physical_error, error_budget)
+        pe = estimate_physical(N + 1, prep_rot, prep_depth, physical_error, error_budget,
+                                constraints)
         prep_extra = nc * shots * len(times) * prep.attempts * pe["runtime_s"]
     qubits = max(p["physical_qubits"] for p in per_shot)
     return QuantumCost(N, per_shot, shots, nc * len(times), run, prep_extra, qubits,

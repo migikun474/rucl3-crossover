@@ -9,6 +9,7 @@
 % Numbers generated from the data by scripts/make_numbers.py
 \input{numbers.tex}
 \input{sensitivity_numbers.tex}
+\input{india_numbers.tex}
 
 % Red notes mark what the authors still have to check or decide.
 % Every \verify must be resolved before submission (grep for it).
@@ -44,9 +45,12 @@ physical error rate of $10^{-4}$ ($10^{-3}$), and at the crossover both
 machines need about a century, so the crossover marks where neither is
 practical rather than where quantum simulation becomes useful. Preparing
 the ground state from the best product state moves the crossover to
-$N^*\approx\NstarPrepRangeWinter$. The qubit count at $N^*$ exceeds the
-1000-qubit target of India's National Quantum Mission by a factor of
-\gapNQMWinterB--\gapNQMWinterA. We claim no advantage today;
+$N^*\approx\NstarPrepRangeWinter$. Even the qubit-minimal layout needs
+\indiaMinQloB--\indiaMinQhiB{} thousand physical qubits at $p=10^{-4}$,
+\indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times the 1000-qubit target of
+India's National Quantum Mission, and the two-qubit error reported for
+the 25-qubit QpiAI-Indus system is \indiaQpiaiOverThreshold{} times above
+the surface-code threshold. We claim no advantage today;
 every projection is stated with its assumptions, and code and data are
 public.
 \end{abstract}
@@ -364,24 +368,47 @@ crossover with ground-state preparation for the \mainSet{} set only.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig4_india_winter2017.pdf}
-\caption{(a) Physical qubits needed at $N^*$ against the National Quantum
-Mission target of 50--1000 physical qubits~\cite{nqm2023} and the 25-qubit
-QpiAI-Indus system~\cite{qpiai2025}. (b) The assumed physical error rates
-against the reported two-qubit error of QpiAI-Indus.}
+\caption{(a) Physical qubits needed at the crossover for the
+time-optimal and the qubit-minimal surface-code layout at two physical
+error rates, against the National Quantum Mission target of 50--1000
+physical qubits~\cite{nqm2023} and the 25-qubit QpiAI-Indus
+system~\cite{qpiai2025}. Bars: \mainSet{} set; whiskers: range over the
+three parameter sets. (b) The assumed physical error rates against the
+reported two-qubit error of QpiAI-Indus.}
 \label{fig:india}
 \end{figure}
 
-\textbf{India roadmap.} The National Quantum Mission aims at intermediate
-scale machines with 50--1000 physical qubits within eight
-years~\cite{nqm2023}. At $N^*$ we need \physQWinterB{} qubits at
-$p=10^{-4}$ and \physQWinterA{} at $p=10^{-3}$, i.e.\ \gapNQMWinterB--\gapNQMWinterA{}
-times the mission's upper target (Fig.~\ref{fig:india}). The reported 96\%
-two-qubit fidelity of QpiAI-Indus~\cite{qpiai2025} corresponds to an
-error of 4\%, above the $\sim$1\% surface-code threshold and
-\gapQpiAIWinterA--\gapQpiAIWinterB{} times the error rates assumed here.
-Both gaps must close for this application; the error-rate gap comes first,
-because below threshold every further factor of ten in $p$ cuts the qubit
-count roughly sixfold (Table~\ref{tab:resources}).
+\textbf{India roadmap.} The National Quantum Mission aims at
+intermediate-scale machines with 50--1000 physical qubits within eight
+years~\cite{nqm2023}; the superconducting QpiAI-Indus system has
+\indiaQpiaiQubits{} qubits with a reported two-qubit fidelity of
+96\%~\cite{qpiai2025}. We map the hardware needed at the crossover for all
+three parameter sets and two surface-code layouts (Fig.~\ref{fig:india}):
+the time-optimal layout of Table~\ref{tab:resources}, with as many
+magic-state factories as shorten the run, and a qubit-minimal layout with
+one factory, which runs 60--75 times longer per shot and therefore crosses
+over later. \emph{Qubits.} At $p=10^{-4}$ the crossover needs
+\indiaFastQloB--\indiaFastQhiB{} thousand physical qubits time-optimally
+($N^*=\indiaFastNloB$--\indiaFastNhiB) and
+\indiaMinQloB--\indiaMinQhiB{} thousand in the qubit-minimal layout
+($N^*=\indiaMinNloB$--\indiaMinNhiB, but \indiaMinTloB--\indiaMinThiB{}
+years of run time); at $p=10^{-3}$ these become
+\indiaFastQloA--\indiaFastQhiA{} and \indiaMinQloA--\indiaMinQhiA{}
+thousand. Against the mission's 1000-qubit target the smallest of these
+machines is \indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times larger, about
+\indiaMinDoubloB{} doublings of qubit count beyond 2031; the time-optimal
+one is \indiaFastDoubloB--\indiaFastDoubhiB{} doublings away.
+\emph{Error rate.} A 96\% fidelity is a 4\% error, \indiaQpiaiOverThreshold{}
+times above the $\sim$1\% surface-code threshold, so no number of such
+qubits can run this computation; reaching $p=10^{-3}$ or $10^{-4}$ needs a
+further \indiaErrGapA{} or \indiaErrGapB{} times lower error. The error
+rate is the binding constraint and comes first: below threshold every
+factor of ten in $p$ cuts the qubit count by a factor of five to
+thirteen in our estimates, which is worth
+more than any of the doublings above. For India's roadmap this
+application therefore asks first for two-qubit errors near $10^{-4}$, and
+only then for qubit counts of order $10^4$--$10^5$, well beyond the
+2031 target.
 
 \section{Limitations and outlook}
 
