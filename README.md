@@ -130,6 +130,6 @@ building makes LaTeX stop on any remaining `\verify`).
   --with-prep` still draws the omitted curves.
 * Not yet done: N = 20/24 exact runs, an anonymous code mirror (the paper
   says code is released upon acceptance).
-* Author names: the PDF stays anonymous for double-blind review. For the
-  camera-ready version fill in `paper/authors.tex` and create
-  `paper/named.flag`.
+* Author names: `paper/sqst2027_submission.pdf` stays anonymous for
+  double-blind review. `paper/sqst2027_camera_ready.pdf` is the named
+  version (authors in `paper/authors.tex`, built with `paper/named.flag`).
