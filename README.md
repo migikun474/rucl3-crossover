@@ -110,21 +110,19 @@ device run, point `fig5()` in `figures/make_figures.py` at the device file.
   with small k undercounts it) and all correlations are averaged over it.
   Classical timings are reported per ground state.
 
-## Open items that need a human decision or check
+## Submission status (SQST 2027, deadline 5 Nov 2026 23:59 AoE)
 
-* **Parameter sets** (`rucl3/model/params.py`): values were entered from
-  memory and are flagged `verified=False`. Check each against the paper
-  (signs, S vs σ) and fill in Kim & Kee.
-* **Resolution dE and error bars** (`rucl3/target.py`): placeholders
-  (dE = 0.5 meV, eps = 5 %). Take them from Banerjee et al. 2017 and
-  Do et al. 2017.
-* **India targets** (`rucl3/analysis/crossover.py`): NQM qubit range and the
-  QpiAI-Indus fidelity need checking against official sources.
-* **Measurement scheme**: the quantum cost counts one Hadamard test per
-  (site, sublattice, component, Re/Im), i.e. 12N circuits per time point.
-  Measuring S(q) directly or sharing shots would cut this; decide whether
-  to model it.
-* **Classical baseline**: the exact solver uses the full 2^N space without
-  translation symmetry (a factor ~N/2 is available) and runs in the time
-  domain. A continued-fraction (frequency-domain) Lanczos would be cheaper
-  still for a fixed broadening; it should be named as a stronger baseline.
+`paper/sqst2027_submission.pdf` is the submission build: 6 pages, anonymous,
+fonts embedded, no unresolved notes (`touch paper/final.flag` before
+building makes LaTeX stop on any remaining `\verify`).
+`paper/edas_abstract.txt` is the abstract for the EDAS form.
+
+* Parameter sets: Ran et al. confirmed from the abstract; Winter et al. and
+  Laurell--Okamoto values confirmed against the tables of
+  Maksimov & Chernyshev (PRR 2020) and arXiv:2602.10190.
+* Resolution dE = 0.5 meV and accuracy eps = 5% are stated in the paper as
+  representative assumptions; Table II covers 1-2 meV and 1-10%.
+* Not in the submission: N = 20/24 exact runs, a real IBM device run (Fig. 5
+  is an emulation with the ibm_torino noise calibration; `ibm_check.py`
+  with a token switches it automatically), an anonymous code mirror (the
+  paper says code is released upon acceptance).

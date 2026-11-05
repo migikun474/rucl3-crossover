@@ -39,7 +39,9 @@ PARAMETER_SETS: dict[str, ParameterSet] = {
     "winter2017": ParameterSet(
         "winter2017", J1=-0.5, K=-5.0, G=2.5, Gp=0.0, J3=0.5,
         reference="S. M. Winter et al., Nat. Commun. 8, 1152 (2017)",
-        note="ab initio + fitted to INS; check whether Gp is quoted",
+        verified=True,
+        note="ab initio + INS minimal model; values confirmed against the tables of "
+             "Maksimov & Chernyshev, PRR 2, 033011 (2020) and Kaib et al.",
     ),
     "ran2017": ParameterSet(
         "ran2017", J1=0.0, K=-6.8, G=9.5, Gp=0.0, J3=0.0,
@@ -50,7 +52,9 @@ PARAMETER_SETS: dict[str, ParameterSet] = {
     "laurell2020": ParameterSet(
         "laurell2020", J1=-1.3, K=-15.1, G=10.1, Gp=-0.12, J3=0.9,
         reference="P. Laurell and S. Okamoto, npj Quantum Mater. 5, 2 (2020)",
-        note="fitted to specific heat and INS with ED",
+        verified=True,
+        note="ED fit to the specific heat; values confirmed against the table of "
+             "arXiv:2602.10190 (2026)",
     ),
     # Kim & Kee give several sets depending on the assumed crystal structure;
     # pick one on 25 Oct and fill it in.

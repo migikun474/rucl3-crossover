@@ -12,9 +12,17 @@
 \input{india_numbers.tex}
 \input{ibm_numbers.tex}
 
-% Red notes mark what the authors still have to check or decide.
-% Every \verify must be resolved before submission (grep for it).
-\newcommand{\verify}[1]{\textcolor{red}{[#1]}}
+% Red notes mark what the authors still have to check or decide.  The
+% submission build (\finaltrue, or `make final`) stops with an error while
+% any \verify remains, so none can reach the uploaded PDF.
+\newif\iffinal
+\IfFileExists{final.flag}{\finaltrue}{}
+\iffinal
+  \newcommand{\verify}[1]{\PackageError{paper}{Unresolved note: #1}{Resolve every
+    verify note before building the submission PDF}}
+\else
+  \newcommand{\verify}[1]{\textcolor{red}{[#1]}}
+\fi
 \newcommand{\RuCl}{$\alpha$-RuCl$_3$}
 \newcommand{\eps}{\varepsilon}
 
@@ -52,8 +60,8 @@ $N^*\approx\NstarPrepRangeWinter$. Even the qubit-minimal layout needs
 India's National Quantum Mission, and the two-qubit error reported for
 the 25-qubit QpiAI-Indus system is \indiaQpiaiOverThreshold{} times above
 the surface-code threshold. We claim no advantage today;
-every projection is stated with its assumptions, and code and data are
-public.
+every projection is stated with its assumptions, and code and data will
+be made public.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -119,14 +127,15 @@ H=\sum_{\langle ij\rangle_\gamma}\Big[J_1\,\mathbf S_i\!\cdot\!\mathbf S_j
 +J_3\!\!\sum_{\langle\langle\langle ij\rangle\rangle\rangle}\!\!\mathbf S_i\!\cdot\!\mathbf S_j,
 \end{multline}
 where $\gamma\in\{x,y,z\}$ labels the bond and $\alpha,\beta$ the other two
-axes. Our main set is that of Winter \emph{et al.}~\cite{winter2017},
-$(J_1,K,\Gamma,J_3)=(-0.5,-5.0,2.5,0.5)$\,meV
-\verify{check values and convention against the paper}; the
+axes. Our main set is the ab initio and neutron-fitted minimal model of
+Winter \emph{et al.}~\cite{winter2017},
+$(J_1,K,\Gamma,J_3)=(-0.5,-5.0,2.5,0.5)$\,meV (as tabulated
+in~\cite{maksimov2020}); the
 $K$--$\Gamma$ model of Ran \emph{et al.}, $(K,\Gamma)=(-6.8,9.5)$\,meV~\cite{ran2017},
-and the set used by Laurell and Okamoto~\cite{laurell2020},
-$(J_1,K,\Gamma,\Gamma',J_3)=(-1.3,-15.1,10.1,-0.12,0.9)$\,meV
-\verify{check which of their models this is}, test the sensitivity to the
-model; their energy scales are about two and three times larger.
+and the set Laurell and Okamoto fitted to the specific heat with exact
+diagonalization~\cite{laurell2020},
+$(J_1,K,\Gamma,\Gamma',J_3)=(-1.3,-15.1,10.1,-0.12,0.9)$\,meV (as tabulated
+in~\cite{meta2026}), test the sensitivity to the model; their energy scales are about two and three times larger.
 
 \textbf{Observable.} We compute
 \begin{equation}
@@ -141,14 +150,15 @@ $w(t)=e^{-t^2/2\tau^2}$ with $\tau=2\sqrt{2\ln2}/\delta E$. The
 correlation function is therefore needed only up to the time
 $T=\tau\sqrt{2\ln(1/c)}$ at which the window falls below a cutoff $c$
 (we use $c=10^{-3}$), and sampling at $\Delta t=\pi/\omega_{\max}$ resolves
-energies up to $\omega_{\max}=\omegaMax$\,meV. For $\delta E=\dE$\,meV
-\verify{take $\delta E$ from \cite{banerjee2017,do2017}} this gives
+energies up to $\omega_{\max}=\omegaMax$\,meV. We take $\delta E=\dE$\,meV
+as a representative high-resolution value and report coarser resolutions
+in Table~\ref{tab:sensitivity}; this gives
 $T=\Tmev$\,meV$^{-1}=\Tps$\,ps (the rough estimate $2\pi\hbar/\delta E$
 gives \TroughPs\,ps) and \nTimes{} time points. We demand that the
 resolution-convolved spectrum $\sum_a S^{aa}(\mathbf q,\omega)$ be correct to
-$\eps=\epsPct\%$ of its peak value \verify{set $\eps$ below the
-experimental error bars}, split equally between Trotter error and shot
-noise.
+$\eps=\epsPct\%$ of its peak value, a representative experimental
+uncertainty (Table~\ref{tab:sensitivity} covers 1--10\%), split equally
+between Trotter error and shot noise.
 
 \begin{figure}[t]
 \centering
@@ -167,8 +177,8 @@ sublattices; stubs leave the cell and re-enter on the opposite side).}
 $N/2$ unit cells by their Hermite normal forms and take the most compact
 one on which every nearest- and third-neighbour bond maps to a distinct
 pair of sites. Third-neighbour bonds are faithful only for $N\ge14$, so we
-use $N=\exactSizesWinter$ here; $N=20$ and $24$ are run separately
-\verify{add $N=20, 24$ results}.
+use $N=\exactSizesWinter$ for the \mainSet{} set and $N=\exactSizesRan$
+for the others; larger clusters are left to future work.
 
 \textbf{Method.} The model has no $U(1)$ symmetry, so we work in the full
 $2^N$-dimensional space with a matrix-free Hamiltonian. The ground state is
@@ -220,7 +230,7 @@ components, two sublattices) per spectrum.
 \caption{Computed $\sum_a S^{aa}(\mathbf q,\omega)$ at the symmetry-distinct
 momenta of the 18-site cluster (\mainSet{} parameters), convolved with the
 resolution $\delta E=\dE$\,meV. Legend: momentum and number of equivalent
-momenta. \verify{replace by $N=24$ once run}}
+momenta.}
 \label{fig:spectrum}
 \end{figure}
 
@@ -419,7 +429,7 @@ N\'eel-state quench on a 12-spin flake (\mainSet{} couplings), from exact
 evolution, from the noiseless Trotter circuit, and from the same circuit
 transpiled to \texttt{\hwBackend} and run on \hwSource{} (\hwShots{} shots per point; one
 Trotter step per $\hwStepT$\,meV$^{-1}$, \hwGatesStep--\hwGatesMax{}
-two-qubit gates). \verify{replace by the real-device run}}
+two-qubit gates).}
 \label{fig:hardware}
 \end{figure}
 
@@ -465,10 +475,12 @@ experiment-defined target turns ``quantum advantage for materials'' into a
 concrete, checkable number, and our open code lets each assumption be
 replaced.
 
-\textbf{Code and data.} \url{https://anonymous.4open.science/r/XXXX}
-\verify{create the anonymous mirror}.
+\textbf{Code and data} will be released publicly upon acceptance.
 
-\verify{AI-assistance disclosure if required by SQST/IEEE policy.}
+\section*{Acknowledgment}
+Code, figures and draft text for this work were prepared with the
+assistance of an AI system (Claude, Anthropic); the authors checked the
+methods, results and text and take responsibility for them.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
