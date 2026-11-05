@@ -17,3 +17,4 @@ paper/build.log
 data/mps/*.npz
 data/mps/*.pkl
 final.flag
+paper/named.flag

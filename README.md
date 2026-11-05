@@ -112,7 +112,7 @@ device run, point `fig5()` in `figures/make_figures.py` at the device file.
 
 ## Submission status (SQST 2027, deadline 5 Nov 2026 23:59 AoE)
 
-`paper/sqst2027_submission.pdf` is the submission build: 6 pages, anonymous,
+`paper/sqst2027_submission.pdf` is the submission build: 5 pages, anonymous,
 fonts embedded, no unresolved notes (`touch paper/final.flag` before
 building makes LaTeX stop on any remaining `\verify`).
 `paper/edas_abstract.txt` is the abstract for the EDAS form.
@@ -122,7 +122,14 @@ building makes LaTeX stop on any remaining `\verify`).
   Maksimov & Chernyshev (PRR 2020) and arXiv:2602.10190.
 * Resolution dE = 0.5 meV and accuracy eps = 5% are stated in the paper as
   representative assumptions; Table II covers 1-2 meV and 1-10%.
-* Not in the submission: N = 20/24 exact runs, a real IBM device run (Fig. 5
-  is an emulation with the ibm_torino noise calibration; `ibm_check.py`
-  with a token switches it automatically), an anonymous code mirror (the
-  paper says code is released upon acceptance).
+* Left out of the submission as not yet strong enough: the extrapolated MPS
+  cost curve (only the measured bond-dimension growth is reported), the
+  crossover with ground-state preparation (kept as a measured caveat), the
+  emulated hardware check (`ibm_check.py` with a device run can bring it
+  back), and the qubit-doubling projection. `fig_crossover.py --with-mps
+  --with-prep` still draws the omitted curves.
+* Not yet done: N = 20/24 exact runs, an anonymous code mirror (the paper
+  says code is released upon acceptance).
+* Author names: the PDF stays anonymous for double-blind review. For the
+  camera-ready version fill in `paper/authors.tex` and create
+  `paper/named.flag`.

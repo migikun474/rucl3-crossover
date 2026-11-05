@@ -17,7 +17,6 @@
 \input{numbers.tex}
 \input{sensitivity_numbers.tex}
 \input{india_numbers.tex}
-\input{ibm_numbers.tex}
 
 % Red notes mark what the authors still have to check or decide.  The
 % submission build (paper/final.flag present) stops with an error while
@@ -38,8 +37,11 @@
 \title{When Will Quantum Computers Beat Classical Simulation of a Real Quantum Magnet?
 A Quantum-Classical Crossover for the Neutron Spectrum of \RuCl}
 
+% Anonymous for double-blind review.  For the camera-ready version, fill in
+% authors.tex and create paper/named.flag.
+\IfFileExists{named.flag}{\input{authors.tex}}{%
 \author{\IEEEauthorblockN{Anonymous Author(s)}
-\IEEEauthorblockA{Proceedings Track submission}}
+\IEEEauthorblockA{Proceedings Track submission}}}
 
 \maketitle
 
@@ -50,8 +52,8 @@ choose. We ask the question for a real material, with the accuracy set by
 an experiment. Our target is the neutron-scattering spectrum
 $S(\mathbf q,\omega)$ of the Kitaev magnet \RuCl, computed to the energy
 resolution of the instrument. We time exact classical simulations on
-clusters of up to 18 spins and matrix-product-state (MPS) simulations on
-cylinders. We measure the Trotter error of the matching quantum circuits
+clusters of up to 18 spins and test matrix-product-state (MPS)
+simulations on cylinders. We measure the Trotter error of the matching quantum circuits
 against exact results and give the circuits to a surface-code resource
 estimator. For \nSets{} published models of the material, a fault-tolerant
 quantum computer becomes faster than exact simulation at
@@ -59,9 +61,7 @@ $N^*\approx\NstarRangeAll$ spins. For the model of \mainSet{} \emph{et al.}
 it then needs \physQWinterB{} physical qubits at a physical error rate of
 $10^{-4}$, or \physQWinterA{} at $10^{-3}$. At this point both machines need
 about a century, so the crossover marks where neither is practical, not
-where quantum simulation becomes useful. Preparing the ground state from
-the best simple starting state moves the crossover to
-$N^*\approx\NstarPrepRangeWinter$. Even the layout with the fewest qubits
+where quantum simulation becomes useful. Even the layout with the fewest qubits
 needs \indiaMinQloB--\indiaMinQhiB{} thousand physical qubits at an error
 rate of $10^{-4}$. That is \indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times
 the 1000-qubit target of India's National Quantum Mission. The two-qubit
@@ -82,8 +82,8 @@ exponentially harder as the simulated piece of crystal grows. We estimate
 how large that piece must be before a future error-corrected quantum
 computer would finish faster than a classical computer, using the real
 accuracy of neutron experiments on the magnet \RuCl. The answer is a few
-dozen magnetic atoms. Reaching it needs hundreds of thousands of physical
-qubits, far more than any machine built or planned so far.
+dozen magnetic atoms. Reaching it needs tens to hundreds of thousands of
+physical qubits, far more than any machine built or planned so far.
 
 \section{Introduction}
 
@@ -112,11 +112,10 @@ resolution of INS. The time window, the total simulated time and the
 allowed error all follow from this one number (Sec.~\ref{sec:target}).
 (ii) The measured classical cost of computing $S(\mathbf q,\omega)$ exactly
 on periodic clusters, including clusters with several ground states, and
-of MPS simulation, whose bond dimension we check against exact results
+a check of how fast MPS simulations need to grow
 (Sec.~\ref{sec:classical}). (iii) Trotter errors measured on the spectrum
 itself, for the same circuit whose gates we count, and a full surface-code
-resource estimate, with ground-state preparation counted separately
-(Sec.~\ref{sec:quantum}). (iv) The crossover size $N^*$, how much it
+resource estimate (Sec.~\ref{sec:quantum}). (iv) The crossover size $N^*$, how much it
 depends on our assumptions, and how far the hardware it needs is from
 India's stated targets (Sec.~\ref{sec:results}).
 
@@ -223,11 +222,12 @@ $T'=\mpsReachWinterWTwoChiSixteen$, \mpsReachWinterWTwoChiThirtyTwo,
 $W=3$, $\chi=32$ and 64 reach only \mpsReachWinterWThreeChiThirtyTwo{} and
 \mpsReachWinterWThreeChiSixtyFour\,meV$^{-1}$. A fit of
 $\ln\chi=c_W+s_WT'$ gives growth rates $s_W=\mpsSWinterWTwo$ and
-\mpsSWinterWThree\,meV, so the full window at $W=3$ would already need
-$\chi\approx\mpsChiWThreeWinter$. The cost per step grows as $N D\chi^3$,
-where $D$ is the bond dimension of the Hamiltonian operator. We extrapolate
-it to cylinders with $N=2W^2$, taking $s_W$ and $c_W$ linear in $W$ and six
-runs (three spin components, two sublattices) per spectrum.
+\mpsSWinterWThree\,meV. The needed bond dimension thus grows quickly with
+time, and faster on the wider cylinder: even $W=3$ would need
+$\chi\approx\mpsChiWThreeWinter$ for the full window, while the cost per
+step grows as $\chi^3$. For the long window that the neutron resolution
+demands, MPS is therefore no cheaper than exact simulation for the sizes we
+study, and we use exact simulation as the classical baseline.
 
 \begin{figure}[t]
 \centering
@@ -289,15 +289,12 @@ error rates $p=10^{-3}$ and $10^{-4}$, and a total error budget of 1\% per
 circuit. The estimator includes rotation synthesis~\cite{ross2016} and
 magic-state factories. One machine runs all circuits one after another.
 
-\textbf{Ground-state preparation.} We use a simple model: phase estimation
-starting from a simple product state with overlap $\gamma$. Each attempt
-takes an evolution time $2\pi\ln(1/\delta)/\Delta$, controlled evolution
-costs twice as much, and each shot needs $1/\gamma^2$ attempts. Better
-methods need only $1/\gamma$~\cite{lin2020}. From exact results we take the
-mean gap $\Delta=\prepGapWinter$\,meV and the best product-state overlap,
-optimised over all spin directions. The overlap falls as
-$\gamma\propto e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$. We
-report this cost separately because it is the least certain part.
+\textbf{Ground-state preparation} is not included in these costs. Our exact
+results show that the overlap of the ground state with the best product
+state, optimised over all spin directions, falls roughly as
+$e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$, so preparing the
+ground state from a simple state could add a large cost; methods that need
+fewer attempts~\cite{lin2020} reduce it.
 
 \section{Crossover and India roadmap}\label{sec:results}
 
@@ -306,10 +303,9 @@ report this cost separately because it is the least certain part.
 \includegraphics[width=\columnwidth]{../figures/fig3_crossover_winter2017.pdf}
 \caption{Time to compute $S(\mathbf q,\omega)$ at the experimental
 resolution and accuracy, against the number of spins. Classical: exact
-simulation, measured for $N\le18$ and extrapolated as $N^22^N$, and MPS
-simulation extrapolated from cylinders with $W=2$ and 3 (it leaves the plot
-near $N=30$). Quantum: second-order Trotter circuits on a surface code,
-without (solid) and with (dashed) ground-state preparation.}
+simulation, measured for $N\le18$ and extrapolated as $N^22^N$. Quantum:
+second-order Trotter circuits on a surface code at two physical error rates,
+without ground-state preparation.}
 \label{fig:crossover}
 \end{figure}
 
@@ -335,15 +331,7 @@ classical computer (Table~\ref{tab:resources}). So the crossover tells us
 about scaling, not about a useful calculation. A practical simulation at
 $N^*$ needs much more parallel hardware and better algorithms on both
 sides. Fourth-order formulas give the same $N^*$, because they need fewer
-steps but five times as many rotations per step. With ground-state
-preparation the crossover moves to $N^*=\NstarPrepRangeWinter$, because
-the product-state overlap shrinks exponentially. Better starting
-states~\cite{lin2020} would help most. The extrapolated MPS cost is higher
-than the exact cost at every size we consider (Fig.~\ref{fig:crossover}).
-The quantum computer beats it from the smallest size on, but it is never
-the cheaper classical method. The long time window that the neutron
-resolution demands makes entanglement grow, and this, not the system size,
-limits MPS. So exact simulation sets the crossover.
+steps but five times as many rotations per step.
 
 \begin{table}[t]
 \centering
@@ -376,10 +364,7 @@ and Laurell and Okamoto sets (exact data for $N=\exactSizesRan$) have
 Trotter prefactors $A=\trotARan$ and \trotALaurell, twenty to thirty times
 that of the \mainSet{} set. Yet they cross over at nearly the same $N^*$,
 because the number of steps grows only as $A^{1/2}$, and the circuit and
-shot counts, which dominate, barely change. With only two sizes we cannot
-tell how their overlap changes with $N$ (for the Laurell and Okamoto set it
-even rises from $N=14$ to 16). So we give the crossover with ground-state
-preparation for the \mainSet{} set only.
+shot counts, which dominate, barely change.
 
 \begin{figure}[t]
 \centering
@@ -411,47 +396,16 @@ years of run time). At $p=10^{-3}$ these numbers become
 \indiaFastQloA--\indiaFastQhiA{} and \indiaMinQloA--\indiaMinQhiA{}
 thousand. The smallest of these machines is
 \indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times larger than the mission's
-1000-qubit target. That is about \indiaMinDoubloB{} doublings of qubit
-count beyond 2031, and the fastest layout is
-\indiaFastDoubloB--\indiaFastDoubhiB{} doublings away. \emph{Error rate.} A
+1000-qubit target. \emph{Error rate.} A
 fidelity of 96\% means a 4\% error. This is \indiaQpiaiOverThreshold{} times
 above the surface-code threshold of about 1\%, so no number of such qubits
 can run this calculation. Reaching $p=10^{-3}$ or $10^{-4}$ needs an error
 \indiaErrGapA{} or \indiaErrGapB{} times lower. The error rate is therefore
 the main limit and comes first. Below threshold, each tenfold drop in $p$
 cuts the qubit count by a factor of five to thirteen in our estimates,
-which is worth more than any of the doublings above. For India's roadmap,
+which is worth more than adding qubits. For India's roadmap,
 this application asks first for two-qubit errors near $10^{-4}$. Only then
 does it ask for $10^4$ to $10^5$ qubits, well beyond the 2031 target.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{../figures/fig5_hardware.pdf}
-\caption{Hardware check on 12 qubits. The staggered magnetization after
-starting a 12-spin flake (\mainSet{} couplings) in the N\'eel state, from
-exact evolution, from the noiseless Trotter circuit, and from the same
-circuit compiled for \texttt{\hwBackend} and run on \hwSource{} (\hwShots{}
-shots per point, one Trotter step per $\hwStepT$\,meV$^{-1}$, and
-\hwGatesStep{} to \hwGatesMax{} two-qubit gates).}
-\label{fig:hardware}
-\end{figure}
-
-\textbf{Hardware check.} To see where today's hardware stands, we run the
-same Trotter circuit on 12 qubits. The full Hadamard-test method, with
-ground-state preparation, needs far too many gates. So we use a standard
-test instead: we start an open 12-spin honeycomb flake with the \mainSet{}
-couplings in the N\'eel state, evolve it, and measure every spin along $z$.
-The Qiskit~\cite{qiskit2024} circuit gives exactly the same result as our
-state-vector Trotter code. Compiled for IBM's Heron processor
-\texttt{\hwBackend}, it needs \hwGatesStep{} two-qubit gates per Trotter
-step. On \hwSource\hwNote, the measured magnetizations differ from the
-exact ones by up to \hwErrStep{} after a single step at
-$t=\hwStepT$\,meV$^{-1}$, only \hwFracT\% of the window $T$. The noiseless
-circuit stays within \hwTrotErrMax. After \hwGatesMax{} two-qubit gates,
-only \hwKeepLast\% of the staggered magnetization survives
-(Fig.~\ref{fig:hardware}). Without error correction, the accuracy the
-experiment needs is out of reach by orders of magnitude in circuit depth.
-This is why the crossover assumes a fault-tolerant machine.
 
 \section{Limitations and outlook}
 
@@ -459,11 +413,9 @@ This is why the crossover assumes a fault-tolerant machine.
 classical method, so our $N^*$ is a lower limit on where an advantage could
 start. Translation symmetry would save another factor of about $N/2$, and
 continued-fraction Lanczos~\cite{gagliano1987} avoids time stepping
-altogether for a fixed blurring. Our MPS estimate is rough. It rests on two
-short cylinders, an upper bound on the error rather than the error in
-momentum space, and a straight-line fit of $\ln\chi$ in time and width. We
-did not run PEPS, time-dependent variational Monte Carlo or neural quantum
-states. Each could raise $N^*$, although long-time dynamics in two
+altogether for a fixed blurring. Our MPS test covers only two short
+cylinders. We did not run PEPS, time-dependent variational Monte Carlo or
+neural quantum states. Each could raise $N^*$, although long-time dynamics in two
 dimensions is where they struggle most. \emph{Extrapolation.} We
 extrapolate the classical costs and Trotter errors from $N\le18$ for the
 \mainSet{} set and $N\le16$ for the others. Our claim that the Trotter error
@@ -474,7 +426,8 @@ correlations between site pairs, or sharing shots between circuits, could
 cut the number of circuits by up to a factor of $N$. \emph{Physics.} We
 assume zero temperature, ignore the neutron polarization factor, and use
 parameter sets that are themselves uncertain. \emph{Ground-state
-preparation} is modelled roughly and dominates when included. Even so,
+preparation} is left out and could add a large cost. \emph{Hardware.} We
+have not yet run the circuits on a quantum device. Even so,
 tying the accuracy to an experiment turns ``quantum advantage for
 materials'' into a concrete number that others can check, and our code
 lets each assumption be changed.

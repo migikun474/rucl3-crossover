@@ -137,7 +137,6 @@ def write_table(rows):
     add("$\\mu$s gates, $p=10^{-4}$", pick(rows, qubits="$\\mu$s, $p=10^{-4}$"))
     add("$\\mu$s gates, $p=10^{-3}$", pick(rows, qubits="$\\mu$s, $p=10^{-3}$"))
     add("Fourth-order Trotter", pick(rows, order=4))
-    add("With ground-state prep.", pick(rows), key="N_star_prep")
     lines.append("\\midrule")
     add("Classical $10^2\\times$ faster", pick(rows, speedup=1e2))
     add("Classical $10^4\\times$ faster", pick(rows, speedup=1e4))

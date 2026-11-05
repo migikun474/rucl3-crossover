@@ -29,6 +29,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--params", default="winter2017")
     ap.add_argument("--order", type=int, default=2)
+    ap.add_argument("--with-mps", action="store_true", help="draw the extrapolated MPS cost")
+    ap.add_argument("--with-prep", action="store_true", help="draw ground-state preparation")
     a = ap.parse_args(argv)
     d = json.loads((ROOT / "data" / f"crossover_{a.params}.json").read_text())
     curves = [c for c in d["curves"] if c["order"] == a.order]
@@ -39,13 +41,13 @@ def main(argv=None):
     c0 = curves[0]
     ax.semilogy(c0["N"], c0["classical_s"], color=COLOR["classical"], lw=2,
                 label="classical (exact)")
-    if "mps_s" in c0:
+    if a.with_mps and "mps_s" in c0:
         ax.semilogy(c0["N"], c0["mps_s"], color=COLOR["mps"], lw=2, label="classical (MPS, extrap.)")
     for c in curves:
         col = COLOR[c["physical_error"]]
         ax.semilogy(c["N"], c["quantum_s"], color=col, lw=2,
                     label=f"quantum, $p$ = {c['physical_error']:g}")
-        if any(x != y for x, y in zip(c["quantum_prep_s"], c["quantum_s"])):
+        if a.with_prep and any(x != y for x, y in zip(c["quantum_prep_s"], c["quantum_s"])):
             ax.semilogy(c["N"], c["quantum_prep_s"], color=col, lw=1.5, ls="--",
                         label=f"  + ground-state prep")
         if c["N_star"]:
@@ -62,8 +64,9 @@ def main(argv=None):
     for v, lab in [(3600, "1 h"), (86400 * 30, "1 month"), (YEAR * 1e3, "1000 yr")]:
         ax.axhline(v, color=GRID, lw=0.8, zorder=0)
         ax.text(xmax, v * 1.6, lab, color=INK2, fontsize=6, ha="right", va="bottom")
-    ax.set_ylim(10, 1e32)  # the extrapolated MPS curve leaves the top of the plot
-    ax.set_yticks([1e2, 1e8, 1e14, 1e20, 1e26, 1e32])
+    ax.set_ylim(10, 1e32 if (a.with_mps or a.with_prep) else 1e20)
+    ax.set_yticks([1e2, 1e8, 1e14, 1e20, 1e26, 1e32] if (a.with_mps or a.with_prep)
+                  else [1e2, 1e5, 1e8, 1e11, 1e14, 1e17, 1e20])
     ax.set_xlabel("number of spins $N$")
     ax.set_ylabel("wall-clock time (s)")
     ax.spines[["top", "right"]].set_visible(False)
