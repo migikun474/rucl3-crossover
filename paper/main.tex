@@ -35,7 +35,7 @@
 \begin{document}
 
 \title{When Will Quantum Computers Beat Classical Simulation of a Real Quantum Magnet?
-A Quantum-Classical Crossover for the Neutron Spectrum of \RuCl}
+The Neutron Spectrum of \RuCl}
 
 % Anonymous for double-blind review.  For the camera-ready version, fill in
 % authors.tex and create paper/named.flag.
@@ -178,7 +178,7 @@ bond stubs leave the cell and come back on the opposite side.}
 
 \textbf{Clusters.} For each $N$ we list all periodic clusters of $N/2$ unit
 cells and pick the most compact one in which every first- and
-third-neighbour bond joins a different pair of sites. Third-neighbour bonds
+third-neighbor bond joins a different pair of sites. Third-neighbor bonds
 only work this way for $N\ge14$. We use $N=\exactSizesWinter$ for the
 \mainSet{} set and $N=\exactSizesRan$ for the other two; larger clusters
 are left for future work.
@@ -196,7 +196,7 @@ read off all correlations at each time. Translation symmetry means one
 reference site $j$ per sublattice is enough. We tested the code on the
 exactly solvable Kitaev model~\cite{kitaev2006,baskaran2007}, where it
 reproduces the conserved plaquettes, the correlations that vanish beyond
-nearest neighbours, and the ground-state energy to within 2\%. For $N=8$,
+nearest neighbors, and the ground-state energy to within 2\%. For $N=8$,
 the spectrum agrees with an exact eigenstate calculation to $10^{-4}$ of
 its peak.
 
@@ -248,9 +248,9 @@ control~\cite{somma2002}. So the time evolution is the only part that needs
 costly non-Clifford gates. It is a second- or fourth-order Suzuki product
 formula~\cite{suzuki1991} built from the Pauli terms of $H$. Each term is a
 rotation $e^{-i\theta\sigma^a_i\sigma^b_j}$. There are five such rotations
-per nearest-neighbour bond for the \mainSet{} set (nine if $\Gamma'\neq0$)
-and three per third-neighbour bond. We group them by bond type and merge
-neighbouring rotations about the same term.
+per nearest-neighbor bond for the \mainSet{} set (nine if $\Gamma'\neq0$)
+and three per third-neighbor bond. We group them by bond type and merge
+neighboring rotations about the same term.
 
 \textbf{Trotter error, measured.} We simulate exactly this sequence of
 rotations on a state vector and form the correlations as the Hadamard test
@@ -291,7 +291,7 @@ magic-state factories. One machine runs all circuits one after another.
 
 \textbf{Ground-state preparation} is not included in these costs. Our exact
 results show that the overlap of the ground state with the best product
-state, optimised over all spin directions, falls roughly as
+state, optimized over all spin directions, falls roughly as
 $e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$, so preparing the
 ground state from a simple state could add a large cost; methods that need
 fewer attempts~\cite{lin2020} reduce it.
