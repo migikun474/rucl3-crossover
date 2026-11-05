@@ -4,7 +4,14 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{url}
+\usepackage{regexpatch}
 \usepackage[hidelinks]{hyperref}
+
+% IEEEtran writes "Abstract---" and "Index Terms---"; use a full stop instead.
+\makeatletter
+\xpatchcmd*{\abstract}{---}{.\ }{}{}
+\xpatchcmd*{\IEEEkeywords}{---}{.\ }{}{}
+\makeatother
 
 % Numbers generated from the data by scripts/make_numbers.py
 \input{numbers.tex}
@@ -13,7 +20,7 @@
 \input{ibm_numbers.tex}
 
 % Red notes mark what the authors still have to check or decide.  The
-% submission build (\finaltrue, or `make final`) stops with an error while
+% submission build (paper/final.flag present) stops with an error while
 % any \verify remains, so none can reach the uploaded PDF.
 \newif\iffinal
 \IfFileExists{final.flag}{\finaltrue}{}
@@ -29,7 +36,7 @@
 \begin{document}
 
 \title{When Will Quantum Computers Beat Classical Simulation of a Real Quantum Magnet?
-A Quantum--Classical Crossover for the Neutron Spectrum of \RuCl}
+A Quantum-Classical Crossover for the Neutron Spectrum of \RuCl}
 
 \author{\IEEEauthorblockN{Anonymous Author(s)}
 \IEEEauthorblockA{Proceedings Track submission}}
@@ -37,31 +44,31 @@ A Quantum--Classical Crossover for the Neutron Spectrum of \RuCl}
 \maketitle
 
 \begin{abstract}
-Claims of quantum advantage for simulating materials are usually made for
-toy models at an arbitrary accuracy. We ask the question for a real
-material and an accuracy fixed by experiment: the dynamical structure
-factor $S(\mathbf q,\omega)$ of the Kitaev magnet \RuCl, resolved to the
-energy resolution of inelastic neutron scattering. We measure the cost of
-exact classical simulation on clusters of up to 18 spins and of
-matrix-product-state time evolution on cylinders, measure the
-Trotter error of the corresponding quantum circuits against the exact
-results, and feed the logical circuits to a surface-code resource
-estimator. Across \nSets{} published exchange models, a fault-tolerant
-quantum computer overtakes exact state-vector simulation at
-$N^*\approx\NstarRangeAll$ spins. For the \mainSet{} \emph{et al.}
-model it needs \physQWinterB{} (\physQWinterA{}) physical qubits at a
-physical error rate of $10^{-4}$ ($10^{-3}$), and at the crossover both
-machines need about a century, so the crossover marks where neither is
-practical rather than where quantum simulation becomes useful. Preparing
-the ground state from the best product state moves the crossover to
-$N^*\approx\NstarPrepRangeWinter$. Even the qubit-minimal layout needs
-\indiaMinQloB--\indiaMinQhiB{} thousand physical qubits at $p=10^{-4}$,
-\indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times the 1000-qubit target of
-India's National Quantum Mission, and the two-qubit error reported for
-the 25-qubit QpiAI-Indus system is \indiaQpiaiOverThreshold{} times above
-the surface-code threshold. We claim no advantage today;
-every projection is stated with its assumptions, and code and data will
-be made public.
+Claims that quantum computers will beat classical computers at simulating
+materials are usually made for toy models, at an accuracy the authors
+choose. We ask the question for a real material, with the accuracy set by
+an experiment. Our target is the neutron-scattering spectrum
+$S(\mathbf q,\omega)$ of the Kitaev magnet \RuCl, computed to the energy
+resolution of the instrument. We time exact classical simulations on
+clusters of up to 18 spins and matrix-product-state (MPS) simulations on
+cylinders. We measure the Trotter error of the matching quantum circuits
+against exact results and give the circuits to a surface-code resource
+estimator. For \nSets{} published models of the material, a fault-tolerant
+quantum computer becomes faster than exact simulation at
+$N^*\approx\NstarRangeAll$ spins. For the model of \mainSet{} \emph{et al.}
+it then needs \physQWinterB{} physical qubits at a physical error rate of
+$10^{-4}$, or \physQWinterA{} at $10^{-3}$. At this point both machines need
+about a century, so the crossover marks where neither is practical, not
+where quantum simulation becomes useful. Preparing the ground state from
+the best simple starting state moves the crossover to
+$N^*\approx\NstarPrepRangeWinter$. Even the layout with the fewest qubits
+needs \indiaMinQloB--\indiaMinQhiB{} thousand physical qubits at an error
+rate of $10^{-4}$. That is \indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times
+the 1000-qubit target of India's National Quantum Mission. The two-qubit
+error reported for the 25-qubit QpiAI-Indus system is
+\indiaQpiaiOverThreshold{} times above the surface-code threshold. We do
+not claim an advantage today. We state the assumptions behind every
+projection, and code and data will be made public.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -69,55 +76,53 @@ quantum advantage, resource estimation, Kitaev materials, neutron scattering, Tr
 \end{IEEEkeywords}
 
 \noindent\textbf{Plain-language summary.}
-Neutron beams reveal how the magnetic moments inside a crystal move, and
-comparing those measurements with a model needs a computer simulation that
-becomes exponentially harder as the simulated piece of crystal grows. We
-estimate how large that piece must be before a future error-corrected
-quantum computer would finish the job faster than a classical computer,
-using the real accuracy of neutron experiments on the magnet \RuCl. The
-answer is a few dozen magnetic atoms, but reaching it requires hundreds of
-thousands of physical qubits, far beyond any machine built or planned so far.
+Neutron beams show how the tiny magnets inside a crystal move. To compare
+these measurements with a model, we need a computer simulation, and it gets
+exponentially harder as the simulated piece of crystal grows. We estimate
+how large that piece must be before a future error-corrected quantum
+computer would finish faster than a classical computer, using the real
+accuracy of neutron experiments on the magnet \RuCl. The answer is a few
+dozen magnetic atoms. Reaching it needs hundreds of thousands of physical
+qubits, far more than any machine built or planned so far.
 
 \section{Introduction}
 
-Simulating quantum dynamics is the application most often named for
-quantum computers, yet most crossover studies cost a model Hamiltonian at an
-accuracy chosen by the authors. Yoshioka \emph{et al.}~\cite{yoshioka2024}
-located the quantum--classical crossover for ground-state energies of
-two-dimensional model Hamiltonians, and Sun \emph{et
-al.}~\cite{sun2026} did so for the dynamics of the mixed-field Ising model,
-benchmarking against tensor-network and variational Monte Carlo methods.
-Two ingredients are still missing for a statement a materials scientist
-can use: a real material whose Hamiltonian is not exactly solvable, and an
-accuracy target set by an actual measurement rather than by a free
-parameter $\eps$.
+Simulating how quantum systems change in time is the use most often named
+for quantum computers. Yet most studies of when quantum computers win use a
+model system and an accuracy chosen by the authors. Yoshioka
+\emph{et al.}~\cite{yoshioka2024} found the crossover point for
+ground-state energies of two-dimensional models. Sun
+\emph{et al.}~\cite{sun2026} did the same for the dynamics of the
+mixed-field Ising model, against tensor-network and variational Monte Carlo
+methods. Two things are still missing for a result a materials scientist
+can use: a real material whose model cannot be solved exactly, and an
+accuracy set by a real measurement rather than by a free parameter $\eps$.
 
 \RuCl{} is the leading candidate for Kitaev's honeycomb spin
 liquid~\cite{kitaev2006,jackeli2009,takagi2019}. Its inelastic neutron
-scattering (INS) spectrum shows a continuum whose origin is debated
-\cite{banerjee2016,banerjee2017,do2017,winter2017}, several exchange
-models compete~\cite{winter2017,ran2017,laurell2020}, and exact
-diagonalization on small clusters is the standard tool for comparing them
-with data~\cite{laurell2020}. It is therefore a natural target for quantum
-simulation, and a natural test of when that simulation would pay off.
+scattering (INS) spectrum shows a broad continuum whose origin is
+debated~\cite{banerjee2016,banerjee2017,do2017,winter2017}. Several models
+of its magnetic interactions compete~\cite{winter2017,ran2017,laurell2020},
+and exact calculations on small clusters are the usual way to compare them
+with data~\cite{laurell2020}. This makes it a natural target for quantum
+simulation, and a natural test of when such a simulation would pay off.
 
-\textbf{Contributions.} (i) An accuracy target derived from the INS energy
-resolution: the time window, total simulated time and spectral tolerance
-all follow from one measured number (Sec.~\ref{sec:target}). (ii) Measured
-classical cost of exact time-domain simulation of $S(\mathbf q,\omega)$ on
-periodic clusters, including the degenerate ground manifolds that
-symmetric clusters carry, and of matrix-product-state time evolution, whose
-bond dimension we measure against exact results
-(Sec.~\ref{sec:classical}). (iii) Trotter errors
-measured on the experimental observable itself, for the exact circuit whose
-gates are counted, and a full surface-code resource estimate with
-ground-state preparation as a separate line item (Sec.~\ref{sec:quantum}).
-(iv) The crossover $N^*$, its sensitivity, and the gap between the hardware
-it needs and India's stated targets (Sec.~\ref{sec:results}).
+\textbf{Contributions.} (i) An accuracy target taken from the energy
+resolution of INS. The time window, the total simulated time and the
+allowed error all follow from this one number (Sec.~\ref{sec:target}).
+(ii) The measured classical cost of computing $S(\mathbf q,\omega)$ exactly
+on periodic clusters, including clusters with several ground states, and
+of MPS simulation, whose bond dimension we check against exact results
+(Sec.~\ref{sec:classical}). (iii) Trotter errors measured on the spectrum
+itself, for the same circuit whose gates we count, and a full surface-code
+resource estimate, with ground-state preparation counted separately
+(Sec.~\ref{sec:quantum}). (iv) The crossover size $N^*$, how much it
+depends on our assumptions, and how far the hardware it needs is from
+India's stated targets (Sec.~\ref{sec:results}).
 
 \section{Model and accuracy target}\label{sec:target}
 
-We use the spin-1/2 $J_1$--$K$--$\Gamma$--$\Gamma'$--$J_3$ model on the
+We use the spin-1/2 $J_1$-$K$-$\Gamma$-$\Gamma'$-$J_3$ model on the
 honeycomb lattice~\cite{rau2014,winter2017},
 \begin{multline}
 H=\sum_{\langle ij\rangle_\gamma}\Big[J_1\,\mathbf S_i\!\cdot\!\mathbf S_j
@@ -126,16 +131,17 @@ H=\sum_{\langle ij\rangle_\gamma}\Big[J_1\,\mathbf S_i\!\cdot\!\mathbf S_j
 +\Gamma'\!\!\sum_{\mu=\alpha,\beta}\!\big(S_i^\gamma S_j^\mu+S_i^\mu S_j^\gamma\big)\Big]
 +J_3\!\!\sum_{\langle\langle\langle ij\rangle\rangle\rangle}\!\!\mathbf S_i\!\cdot\!\mathbf S_j,
 \end{multline}
-where $\gamma\in\{x,y,z\}$ labels the bond and $\alpha,\beta$ the other two
-axes. Our main set is the ab initio and neutron-fitted minimal model of
-Winter \emph{et al.}~\cite{winter2017},
-$(J_1,K,\Gamma,J_3)=(-0.5,-5.0,2.5,0.5)$\,meV (as tabulated
-in~\cite{maksimov2020}); the
-$K$--$\Gamma$ model of Ran \emph{et al.}, $(K,\Gamma)=(-6.8,9.5)$\,meV~\cite{ran2017},
-and the set Laurell and Okamoto fitted to the specific heat with exact
-diagonalization~\cite{laurell2020},
-$(J_1,K,\Gamma,\Gamma',J_3)=(-1.3,-15.1,10.1,-0.12,0.9)$\,meV (as tabulated
-in~\cite{meta2026}), test the sensitivity to the model; their energy scales are about two and three times larger.
+where $\gamma\in\{x,y,z\}$ labels the bond and $\alpha,\beta$ are the other
+two axes. Our main parameter set is the minimal model of Winter
+\emph{et al.}~\cite{winter2017}, fitted to ab initio results and neutron
+data: $(J_1,K,\Gamma,J_3)=(-0.5,-5.0,2.5,0.5)$\,meV (as listed
+in~\cite{maksimov2020}). Two more sets test how much the model matters: the
+$K$-$\Gamma$ model of Ran \emph{et al.},
+$(K,\Gamma)=(-6.8,9.5)$\,meV~\cite{ran2017}, and the set that Laurell and
+Okamoto fitted to the specific heat~\cite{laurell2020},
+$(J_1,K,\Gamma,\Gamma',J_3)=(-1.3,-15.1,10.1,-0.12,0.9)$\,meV (as listed
+in~\cite{meta2026}). Their energy scales are about two and three times
+larger.
 
 \textbf{Observable.} We compute
 \begin{equation}
@@ -143,175 +149,176 @@ S(\mathbf q,\omega)=\frac{1}{2\pi}\!\int_{-T}^{T}\!\!dt\,w(t)\,e^{i\omega t}
 \frac1N\sum_{ij}e^{i\mathbf q\cdot(\mathbf r_i-\mathbf r_j)}
 \langle\mathbf S_i(t)\!\cdot\!\mathbf S_j(0)\rangle
 \end{equation}
-($\hbar=1$, energies in meV). An instrument with Gaussian resolution of
-full width $\delta E$ measures the true spectrum convolved with that
-Gaussian, which in the time domain is \emph{exactly} the window
-$w(t)=e^{-t^2/2\tau^2}$ with $\tau=2\sqrt{2\ln2}/\delta E$. The
-correlation function is therefore needed only up to the time
-$T=\tau\sqrt{2\ln(1/c)}$ at which the window falls below a cutoff $c$
-(we use $c=10^{-3}$), and sampling at $\Delta t=\pi/\omega_{\max}$ resolves
+with $\hbar=1$ and energies in meV. An instrument with a Gaussian energy
+resolution of full width $\delta E$ measures the true spectrum blurred by
+that Gaussian. In time, this blurring is exactly the window
+$w(t)=e^{-t^2/2\tau^2}$ with $\tau=2\sqrt{2\ln2}/\delta E$. So we only need
+the correlations up to the time $T=\tau\sqrt{2\ln(1/c)}$, where the window
+drops below $c=10^{-3}$. Sampling every $\Delta t=\pi/\omega_{\max}$ covers
 energies up to $\omega_{\max}=\omegaMax$\,meV. We take $\delta E=\dE$\,meV
-as a representative high-resolution value and report coarser resolutions
-in Table~\ref{tab:sensitivity}; this gives
-$T=\Tmev$\,meV$^{-1}=\Tps$\,ps (the rough estimate $2\pi\hbar/\delta E$
-gives \TroughPs\,ps) and \nTimes{} time points. We demand that the
-resolution-convolved spectrum $\sum_a S^{aa}(\mathbf q,\omega)$ be correct to
-$\eps=\epsPct\%$ of its peak value, a representative experimental
-uncertainty (Table~\ref{tab:sensitivity} covers 1--10\%), split equally
-between Trotter error and shot noise.
+as a typical high-resolution value; Table~\ref{tab:sensitivity} shows
+coarser ones. This gives $T=\Tmev$\,meV$^{-1}=\Tps$\,ps and \nTimes{} time
+points (the rough estimate $2\pi\hbar/\delta E$ gives \TroughPs\,ps). We
+require the blurred spectrum $\sum_a S^{aa}(\mathbf q,\omega)$ to be correct
+to $\eps=\epsPct\%$ of its peak, a typical experimental uncertainty
+(Table~\ref{tab:sensitivity} covers 1--10\%). Half of this error budget goes
+to Trotter error and half to shot noise.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig1_pipeline.pdf}
-\caption{The pipeline: the neutron resolution fixes the window, the total
-time and the accuracy; classical and quantum costs are measured or
-estimated for the same target and meet at $N^*$. Right: a 24-site periodic
-cluster with Kitaev bond labels (open and filled circles are the two
-sublattices; stubs leave the cell and re-enter on the opposite side).}
+\caption{The method. The neutron resolution sets the time window, the total
+time and the accuracy. We find the classical and quantum costs for the same
+target, and they meet at $N^*$. Right: a 24-site periodic cluster with
+Kitaev bond labels. Open and filled circles are the two sublattices; short
+bond stubs leave the cell and come back on the opposite side.}
 \label{fig:pipeline}
 \end{figure}
 
 \section{Classical cost}\label{sec:classical}
 
-\textbf{Clusters.} For each $N$ we enumerate all periodic supercells of
-$N/2$ unit cells by their Hermite normal forms and take the most compact
-one on which every nearest- and third-neighbour bond maps to a distinct
-pair of sites. Third-neighbour bonds are faithful only for $N\ge14$, so we
-use $N=\exactSizesWinter$ for the \mainSet{} set and $N=\exactSizesRan$
-for the others; larger clusters are left to future work.
+\textbf{Clusters.} For each $N$ we list all periodic clusters of $N/2$ unit
+cells and pick the most compact one in which every first- and
+third-neighbour bond joins a different pair of sites. Third-neighbour bonds
+only work this way for $N\ge14$. We use $N=\exactSizesWinter$ for the
+\mainSet{} set and $N=\exactSizesRan$ for the other two; larger clusters
+are left for future work.
 
-\textbf{Method.} The model has no $U(1)$ symmetry, so we work in the full
-$2^N$-dimensional space with a matrix-free Hamiltonian. The ground state is
-found by two-pass Lanczos; symmetric clusters have degenerate ground
-levels (\degenWinterNFourteen-fold for $N=14$, matching three zigzag
-orientations times time reversal, and \degenWinterNEighteen-fold for $N=18$
-with the \mainSet{} parameters), which we resolve by deflated Lanczos and
-average over, since a single Lanczos vector breaks translation symmetry. Each $S_j^b|0\rangle$ is propagated by
-short-iterative Lanczos~\cite{park1986} with an a-posteriori error bound
-of $10^{-9}$, and overlaps with $S_i^a$ give all correlators at each
-time; translation invariance reduces the reference sites $j$ to one per
-sublattice. The code is checked against the exactly solvable Kitaev
-limit~\cite{kitaev2006,baskaran2007} (conserved plaquettes, ultra-short-ranged
-static and dynamical correlations, ground-state energy within 2\% of the
-thermodynamic value) and against the exact Lehmann sum for $N=8$, which
-the time-domain result matches to $10^{-4}$ of the peak.
+\textbf{Method.} The model conserves no spin component, so we work with the
+full space of $2^N$ states and apply the Hamiltonian without storing it.
+We find the ground state with the Lanczos method. Symmetric clusters have
+several ground states: \degenWinterNFourteen{} for $N=14$ (three zigzag
+directions times time reversal) and \degenWinterNEighteen{} for $N=18$ with
+the \mainSet{} parameters. We find all of them and average over them,
+because a single one breaks the translation symmetry. We evolve each
+$S_j^b|0\rangle$ in time with the short-iterative Lanczos
+method~\cite{park1986}, with an error of at most $10^{-9}$ per step, and
+read off all correlations at each time. Translation symmetry means one
+reference site $j$ per sublattice is enough. We tested the code on the
+exactly solvable Kitaev model~\cite{kitaev2006,baskaran2007}, where it
+reproduces the conserved plaquettes, the correlations that vanish beyond
+nearest neighbours, and the ground-state energy to within 2\%. For $N=8$,
+the spectrum agrees with an exact eigenstate calculation to $10^{-4}$ of
+its peak.
 
 \textbf{Measured cost.} The full spectrum takes \tExactWinterNFourteen,
 \tExactWinterNSixteen{} and \tExactWinterNEighteen{} on a 4-core
-workstation for $N=14,16,18$ (all ground states included). Per ground
-state, the cost follows $t\propto N^2 2^N$ (matrix--vector cost $\propto
-N2^N$ times a number of products $\propto\|H\|T\propto NT$); a free
-exponential fit gives a base of \classBaseWinter. Fig.~\ref{fig:spectrum}
-shows the computed spectrum for $N=18$.
+workstation for $N=14$, 16 and 18, counting all ground states. Per ground
+state the cost grows as $N^2 2^N$: each product with the Hamiltonian costs
+about $N2^N$, and the number of products grows as $N$. A free exponential
+fit gives a growth factor of \classBaseWinter{} per spin.
+Fig.~\ref{fig:spectrum} shows the spectrum for $N=18$.
 
 \textbf{Matrix product states.} We also evolve $S^z_j|0\rangle$ with
-two-site TDVP~\cite{haegeman2016} in TeNPy~\cite{hauschild2018}, from a DMRG
-ground state, on cylinders of circumference $W=2$ and $3$ unit cells (16
-and 18 spins). The MPO is built from the same bond list as the exact code,
-and with full bond dimension the two agree to $10^{-9}$. For each bond
-dimension $\chi$ we find the longest window $T'$ over which the error of
-the resolution-convolved spectrum, bounded by summing site-resolved errors
-against the exact result, stays below $\eps$. For $W=2$, $\chi=16$, 32, 64
-and 128 reach $T'=\mpsReachWinterWTwoChiSixteen$,
-\mpsReachWinterWTwoChiThirtyTwo, \mpsReachWinterWTwoChiSixtyFour{} and
-\mpsReachWinterWTwoChiOneTwentyEight\,meV$^{-1}$ (the full window); for
+two-site TDVP~\cite{haegeman2016} in TeNPy~\cite{hauschild2018}, starting
+from a DMRG ground state, on cylinders with a circumference of $W=2$ and 3
+unit cells (16 and 18 spins). The MPS code uses the same bonds as the exact
+code, and at full bond dimension the two agree to $10^{-9}$. For each bond
+dimension $\chi$ we find the longest time window $T'$ for which the error
+of the blurred spectrum stays below $\eps$. We bound this error by summing
+the errors of all site pairs. For $W=2$, $\chi=16$, 32, 64 and 128 reach
+$T'=\mpsReachWinterWTwoChiSixteen$, \mpsReachWinterWTwoChiThirtyTwo,
+\mpsReachWinterWTwoChiSixtyFour{} and
+\mpsReachWinterWTwoChiOneTwentyEight\,meV$^{-1}$ (the full window). For
 $W=3$, $\chi=32$ and 64 reach only \mpsReachWinterWThreeChiThirtyTwo{} and
-\mpsReachWinterWThreeChiSixtyFour\,meV$^{-1}$. Fitting
+\mpsReachWinterWThreeChiSixtyFour\,meV$^{-1}$. A fit of
 $\ln\chi=c_W+s_WT'$ gives growth rates $s_W=\mpsSWinterWTwo$ and
 \mpsSWinterWThree\,meV, so the full window at $W=3$ would already need
-$\chi\approx\mpsChiWThreeWinter$. We extrapolate the cost, measured per
-step as $\propto N D\chi^3$ ($D$ the MPO bond dimension), to cylinders with
-$N=2W^2$, with $s_W$ and $c_W$ linear in $W$ and six evolutions (three
-components, two sublattices) per spectrum.
+$\chi\approx\mpsChiWThreeWinter$. The cost per step grows as $N D\chi^3$,
+where $D$ is the bond dimension of the Hamiltonian operator. We extrapolate
+it to cylinders with $N=2W^2$, taking $s_W$ and $c_W$ linear in $W$ and six
+runs (three spin components, two sublattices) per spectrum.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig2_spectrum_winter2017_N18.pdf}
-\caption{Computed $\sum_a S^{aa}(\mathbf q,\omega)$ at the symmetry-distinct
-momenta of the 18-site cluster (\mainSet{} parameters), convolved with the
-resolution $\delta E=\dE$\,meV. Legend: momentum and number of equivalent
-momenta.}
+\caption{The computed spectrum $\sum_a S^{aa}(\mathbf q,\omega)$ at the
+distinct momenta of the 18-site cluster (\mainSet{} parameters), blurred by
+the resolution $\delta E=\dE$\,meV. The legend gives each momentum and how
+many equivalent momenta it stands for.}
 \label{fig:spectrum}
 \end{figure}
 
 \section{Quantum cost}\label{sec:quantum}
 
-\textbf{Circuit.} One qubit per spin plus one ancilla. Each correlator is
-measured by the Hadamard test with controlled Paulis and an
-\emph{uncontrolled} evolution between them~\cite{somma2002}, so the
-evolution circuit is the only non-Clifford part. The evolution is a
-second- or fourth-order Suzuki product formula~\cite{suzuki1991} over the
-Pauli strings of $H$: five rotations $e^{-i\theta\sigma^a_i\sigma^b_j}$ per
-nearest-neighbour bond for the \mainSet{} set (nine if $\Gamma'\neq0$) and
-three per third-neighbour bond, ordered by bond family, with neighbouring
-rotations about the same string fused.
+\textbf{Circuit.} We use one qubit per spin and one extra (ancilla) qubit.
+Each correlation is measured with the Hadamard test. The ancilla controls
+only two Pauli gates, and the time evolution between them runs without
+control~\cite{somma2002}. So the time evolution is the only part that needs
+costly non-Clifford gates. It is a second- or fourth-order Suzuki product
+formula~\cite{suzuki1991} built from the Pauli terms of $H$. Each term is a
+rotation $e^{-i\theta\sigma^a_i\sigma^b_j}$. There are five such rotations
+per nearest-neighbour bond for the \mainSet{} set (nine if $\Gamma'\neq0$)
+and three per third-neighbour bond. We group them by bond type and merge
+neighbouring rotations about the same term.
 
-\textbf{Trotter error, measured.} We simulate exactly this rotation
-sequence on a state vector, form the correlators as the Hadamard test
-would (evolving both $|0\rangle$ and $S^b_j|0\rangle$ with the circuit),
-and compute the error of the resolution-convolved spectrum against the
-exact result for $N=\exactSizesWinter$, several step sizes $\delta t$ and
-three resolutions. The data follow $\eps_{\rm Trot}=A\,T\,\delta t^{p}$ with
-$p=\trotPWinter$ for second order (\trotNptsWinter{} points); fitting an
-explicit $N^\alpha$ gives $\alpha=\trotFreeAlphaWinter$, so we take the
-largest prefactor among the measured sizes, $A=\trotAWinter$, and no growth
-with $N$. This is the expected behaviour for an intensive,
-resolution-limited quantity; commutator bounds~\cite{childs2021} would be
-far more pessimistic.
+\textbf{Trotter error, measured.} We simulate exactly this sequence of
+rotations on a state vector and form the correlations as the Hadamard test
+would, evolving both $|0\rangle$ and $S^b_j|0\rangle$ with the circuit. We
+then compare the blurred spectrum with the exact one for
+$N=\exactSizesWinter$, for several step sizes $\delta t$ and three
+resolutions. The error follows $\eps_{\rm Trot}=A\,T\,\delta t^{p}$, with
+$p=\trotPWinter$ for second order (\trotNptsWinter{} points). Fitting an
+extra factor $N^\alpha$ gives $\alpha=\trotFreeAlphaWinter$, so the error
+does not grow with $N$. We use the largest prefactor among the sizes we
+measured, $A=\trotAWinter$. This is what we expect for a quantity that does
+not grow with system size and is limited by the resolution. Worst-case
+commutator bounds~\cite{childs2021} would give far larger numbers.
 
-\textbf{Shots.} Each shot gives $\pm1$, so the variance of a correlator of
-spin-1/2 operators is at most $1/16n$ after $n$ shots. Propagating this
-through the windowed transform gives
-$\mathrm{Var}\,S\le 3N\sum_k (w_k\Delta t)^2/(32\pi^2 n)$, and we choose $n$
-so that two standard deviations stay below half of $\eps S_{\max}$.
-Here $S_{\max}$ is the peak of the inelastic spectrum ($\omega>2\delta E$),
-excluding the quasi-elastic weight that piles up at the zigzag ordering
-vector on clusters that fit that order, and taking the smallest peak over
-the measured sizes ($S_{\max}=\SpeakWinter$\,meV$^{-1}$ for the
-\mainSet{} set, $n\approx\shotsWinter$). With one reference site per sublattice, three
-spin components and real and imaginary parts, $12N$ circuits are needed per
-time point, $\circuitsWinterA$ in total at $N=\NstarWinterA$. All are
-independent, so they could run on many machines at once; we compare one
-quantum computer with one classical workstation.
+\textbf{Shots.} Each shot gives $\pm1$, so after $n$ shots the variance of a
+correlation of spin-1/2 operators is at most $1/16n$. Carried through the
+windowed transform, this gives
+$\mathrm{Var}\,S\le 3N\sum_k (w_k\Delta t)^2/(32\pi^2 n)$. We choose $n$ so
+that two standard deviations stay below half of $\eps S_{\max}$. Here
+$S_{\max}$ is the peak of the inelastic spectrum ($\omega>2\delta E$). It
+leaves out the weight near zero energy that builds up at the zigzag
+ordering wavevector on clusters that fit this order, and it takes the
+smallest peak over the sizes we measured. For the \mainSet{} set,
+$S_{\max}=\SpeakWinter$\,meV$^{-1}$ and $n\approx\shotsWinter$. With one
+reference site per sublattice, three spin components, and real and
+imaginary parts, we need $12N$ circuits per time point, or
+$\circuitsWinterA$ in total at $N=\NstarWinterA$. All are independent and
+could run on many machines at once. We compare one quantum computer with
+one classical workstation.
 
-\textbf{Error correction.} Logical counts (qubits, rotations, rotation
-depth from as-soon-as-possible scheduling) are passed to Microsoft's
-resource estimator~\cite{beverland2022} with a surface code~\cite{fowler2012},
-gate-based qubits with nanosecond gate times and physical error rates
-$p=10^{-3}$ and $10^{-4}$, and a total error budget of 1\% per circuit;
-rotation synthesis~\cite{ross2016} and magic-state factories are included
-by the estimator. One machine runs all circuits sequentially.
+\textbf{Error correction.} We pass the logical counts (qubits, rotations,
+and rotation depth from scheduling each rotation as early as possible) to
+Microsoft's resource estimator~\cite{beverland2022}. We use a surface
+code~\cite{fowler2012}, gate-based qubits with nanosecond gates, physical
+error rates $p=10^{-3}$ and $10^{-4}$, and a total error budget of 1\% per
+circuit. The estimator includes rotation synthesis~\cite{ross2016} and
+magic-state factories. One machine runs all circuits one after another.
 
-\textbf{Ground-state preparation.} We use a simple model of
-phase-estimation projection from a product state with overlap $\gamma$:
-an evolution time $2\pi\ln(1/\delta)/\Delta$ per attempt with controlled
-evolution at twice the cost, and $1/\gamma^2$ attempts per shot;
-near-optimal methods reduce the latter to $1/\gamma$~\cite{lin2020}. From exact
-results we take the mean gap $\Delta=\prepGapWinter$\,meV and the best
-product-state overlap, optimised over all single-spin directions, which
-decays as $\gamma\propto e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$.
-This line item is reported separately because it is the least certain.
+\textbf{Ground-state preparation.} We use a simple model: phase estimation
+starting from a simple product state with overlap $\gamma$. Each attempt
+takes an evolution time $2\pi\ln(1/\delta)/\Delta$, controlled evolution
+costs twice as much, and each shot needs $1/\gamma^2$ attempts. Better
+methods need only $1/\gamma$~\cite{lin2020}. From exact results we take the
+mean gap $\Delta=\prepGapWinter$\,meV and the best product-state overlap,
+optimised over all spin directions. The overlap falls as
+$\gamma\propto e^{-\prepKappaWinter N}$ over $N=\exactSizesWinter$. We
+report this cost separately because it is the least certain part.
 
 \section{Crossover and India roadmap}\label{sec:results}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig3_crossover_winter2017.pdf}
-\caption{Wall-clock time to obtain $S(\mathbf q,\omega)$ at the
-experimental resolution and accuracy, against the number of spins.
-Classical: exact simulation, measured for $N\le18$ and extrapolated as
-$N^22^N$, and MPS time evolution extrapolated from cylinders with $W=2,3$
-(it leaves the plot near $N=30$). Quantum: second-order Trotter circuits,
-surface code, without (solid) and with (dashed) ground-state preparation.}
+\caption{Time to compute $S(\mathbf q,\omega)$ at the experimental
+resolution and accuracy, against the number of spins. Classical: exact
+simulation, measured for $N\le18$ and extrapolated as $N^22^N$, and MPS
+simulation extrapolated from cylinders with $W=2$ and 3 (it leaves the plot
+near $N=30$). Quantum: second-order Trotter circuits on a surface code,
+without (solid) and with (dashed) ground-state preparation.}
 \label{fig:crossover}
 \end{figure}
 
 \begin{table}[t]
 \centering
-\caption{Fault-tolerant resources at the crossover for the three
-parameter sets (second-order Trotter, $\delta E=\dE$\,meV,
-$\eps=\epsPct\%$). $r$: Trotter steps for the longest time; $d$: code
-distance; runtime excludes ground-state preparation.}
+\caption{Fault-tolerant resources at the crossover for the three parameter
+sets (second-order Trotter, $\delta E=\dE$\,meV, $\eps=\epsPct\%$). $r$:
+Trotter steps for the longest time. $d$: code distance. The runtime leaves
+out ground-state preparation.}
 \label{tab:resources}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
@@ -319,168 +326,165 @@ distance; runtime excludes ground-state preparation.}
 \end{table}
 
 Fig.~\ref{fig:crossover} shows the result for the \mainSet{} set. The
-quantum cost grows only polynomially, but its prefactor is large: at $N^*$
-a single circuit runs for seconds, and $\sim10^5$ circuits each need
-$\sim10^4$ shots. The curves cross at $N^*=\NstarRangeWinter$ for both
-error rates, where the quantum computer needs \tQuantumWinterB{}
-($p=10^{-4}$) or \tQuantumWinterA{} ($p=10^{-3}$) against
-\tClassicalWinterB{} classically (Table~\ref{tab:resources}). The
-crossover is therefore a statement about scaling, not about a useful
-computation: practical simulation at $N^*$ needs both far more parallel
-hardware and better algorithms on each side. Fourth-order formulas give
-the same $N^*$, because fewer steps are offset by five times as many
-rotations per step. Including ground-state preparation moves the
-crossover to $N^*=\NstarPrepRangeWinter$, because the product-state
-overlap shrinks exponentially; better initial states~\cite{lin2020} are
-the main lever. The extrapolated MPS cost lies above the exact cost at
-every size we consider (Fig.~\ref{fig:crossover}), so the quantum
-computer beats it from the smallest size on, but it is never the cheaper
-classical method: with the long time window that the neutron resolution
-demands, entanglement growth rather than system size limits MPS, and the
-crossover is set by exact simulation.
+quantum cost grows only as a power of $N$, but it starts high. At $N^*$ one
+circuit runs for seconds, and about $10^5$ circuits each need about $10^4$
+shots. The curves cross at $N^*=\NstarRangeWinter$ for both error rates.
+There the quantum computer needs \tQuantumWinterB{} ($p=10^{-4}$) or
+\tQuantumWinterA{} ($p=10^{-3}$), against \tClassicalWinterB{} for the
+classical computer (Table~\ref{tab:resources}). So the crossover tells us
+about scaling, not about a useful calculation. A practical simulation at
+$N^*$ needs much more parallel hardware and better algorithms on both
+sides. Fourth-order formulas give the same $N^*$, because they need fewer
+steps but five times as many rotations per step. With ground-state
+preparation the crossover moves to $N^*=\NstarPrepRangeWinter$, because
+the product-state overlap shrinks exponentially. Better starting
+states~\cite{lin2020} would help most. The extrapolated MPS cost is higher
+than the exact cost at every size we consider (Fig.~\ref{fig:crossover}).
+The quantum computer beats it from the smallest size on, but it is never
+the cheaper classical method. The long time window that the neutron
+resolution demands makes entanglement grow, and this, not the system size,
+limits MPS. So exact simulation sets the crossover.
 
 \begin{table}[t]
 \centering
-\caption{Sensitivity of the crossover: one assumption changed at a time
-from the baseline (\mainSet{} set, $\delta E=\dE$\,meV,
+\caption{How the crossover depends on our assumptions. Each row changes one
+assumption from the baseline (\mainSet{} set, $\delta E=\dE$\,meV,
 $\eps=\epsPct\%$, second-order Trotter, nanosecond gates with
 $p=10^{-4}$, one classical workstation). Runtime and physical qubits are
-those of the quantum computer at $N^*$, without ground-state
-preparation.}
+for the quantum computer at $N^*$, without ground-state preparation.}
 \label{tab:sensitivity}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \input{table2.tex}
 \end{table}
 
-\textbf{Sensitivity.} Table~\ref{tab:sensitivity} varies one assumption at
-a time; across the full grid of \gridCount{} combinations (three parameter
-sets, three resolutions, four accuracies, four qubit models and both
-Trotter orders where measured) $N^*$ stays between \gridMin{} and
-\gridMax{} against one workstation. \emph{Experiment:} a tighter accuracy
-or a finer resolution moves $N^*$ by a few spins but changes the quantum
-run time at $N^*$ by orders of magnitude, from years at $\delta E=2$\,meV
-to millennia at $\eps=1\%$, because the shot count grows as $\eps^{-2}$ and
-the circuits lengthen with $T$. \emph{Quantum hardware:} the physical error
-rate sets the qubit count but hardly moves $N^*$; slow (microsecond)
-gates, as in trapped ions, make every shot about $1500$ times longer and
-push $N^*$ to the largest values in the grid. \emph{Classical hardware:}
-each factor of two in classical speed costs roughly one spin, so a large
-cluster $10^4$ times faster than our workstation moves $N^*$ by about 14.
-\emph{Model:} the Ran \emph{et al.} and Laurell--Okamoto sets (exact data for
-$N=\exactSizesRan$) have Trotter prefactors $A=\trotARan$ and
-\trotALaurell, twenty to thirty times that of the \mainSet{} set, yet cross
-over at nearly the same $N^*$: the step count grows only as $A^{1/2}$, and
-the circuit and shot counts, which dominate, barely change. With only two
-sizes the overlap trend of these sets is not determined (for
-Laurell--Okamoto it even rises from $N=14$ to $16$), so we quote the
-crossover with ground-state preparation for the \mainSet{} set only.
+\textbf{Sensitivity.} Table~\ref{tab:sensitivity} changes one assumption at
+a time. Over all \gridCount{} combinations (three parameter sets, three
+resolutions, four accuracies, four qubit types, and both Trotter orders
+where measured), $N^*$ stays between \gridMin{} and \gridMax{} against one
+workstation. \emph{Experiment:} a tighter accuracy or a finer resolution
+moves $N^*$ by only a few spins. But it changes the quantum run time at
+$N^*$ hugely, from years at $\delta E=2$\,meV to millennia at $\eps=1\%$,
+because the number of shots grows as $\eps^{-2}$ and the circuits get
+longer with $T$. \emph{Quantum hardware:} the physical error rate sets the
+number of qubits but barely moves $N^*$. Slow gates (microseconds), as in
+trapped ions, make each shot about 1500 times longer and give the largest
+$N^*$ values. \emph{Classical hardware:} each doubling of classical speed
+adds roughly one spin, so a large cluster $10^4$ times faster than our
+workstation raises $N^*$ by about 14. \emph{Model:} the Ran \emph{et al.}
+and Laurell and Okamoto sets (exact data for $N=\exactSizesRan$) have
+Trotter prefactors $A=\trotARan$ and \trotALaurell, twenty to thirty times
+that of the \mainSet{} set. Yet they cross over at nearly the same $N^*$,
+because the number of steps grows only as $A^{1/2}$, and the circuit and
+shot counts, which dominate, barely change. With only two sizes we cannot
+tell how their overlap changes with $N$ (for the Laurell and Okamoto set it
+even rises from $N=14$ to 16). So we give the crossover with ground-state
+preparation for the \mainSet{} set only.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig4_india_winter2017.pdf}
-\caption{(a) Physical qubits needed at the crossover for the
-time-optimal and the qubit-minimal surface-code layout at two physical
-error rates, against the National Quantum Mission target of 50--1000
-physical qubits~\cite{nqm2023} and the 25-qubit QpiAI-Indus
-system~\cite{qpiai2025}. Bars: \mainSet{} set; whiskers: range over the
-three parameter sets. (b) The assumed physical error rates against the
-reported two-qubit error of QpiAI-Indus.}
+\caption{(a) Physical qubits needed at the crossover, for the fastest and
+for the smallest surface-code layout, at two physical error rates. The
+shaded band is the National Quantum Mission target of 50 to 1000 physical
+qubits~\cite{nqm2023}, and the dashed line is the 25-qubit QpiAI-Indus
+system~\cite{qpiai2025}. Bars show the \mainSet{} set and whiskers the range
+over the three parameter sets. (b) The assumed physical error rates against
+the reported two-qubit error of QpiAI-Indus.}
 \label{fig:india}
 \end{figure}
 
-\textbf{India roadmap.} The National Quantum Mission aims at
-intermediate-scale machines with 50--1000 physical qubits within eight
-years~\cite{nqm2023}; the superconducting QpiAI-Indus system has
-\indiaQpiaiQubits{} qubits with a reported two-qubit fidelity of
-96\%~\cite{qpiai2025}. We map the hardware needed at the crossover for all
-three parameter sets and two surface-code layouts (Fig.~\ref{fig:india}):
-the time-optimal layout of Table~\ref{tab:resources}, with as many
-magic-state factories as shorten the run, and a qubit-minimal layout with
-one factory, which runs 60--75 times longer per shot and therefore crosses
-over later. \emph{Qubits.} At $p=10^{-4}$ the crossover needs
-\indiaFastQloB--\indiaFastQhiB{} thousand physical qubits time-optimally
-($N^*=\indiaFastNloB$--\indiaFastNhiB) and
-\indiaMinQloB--\indiaMinQhiB{} thousand in the qubit-minimal layout
+\textbf{India roadmap.} The National Quantum Mission aims for machines with
+50 to 1000 physical qubits within eight years~\cite{nqm2023}. The
+superconducting QpiAI-Indus system has \indiaQpiaiQubits{} qubits with a
+reported two-qubit fidelity of 96\%~\cite{qpiai2025}. We work out the
+hardware needed at the crossover for all three parameter sets and two
+surface-code layouts (Fig.~\ref{fig:india}). The fastest layout, used in
+Table~\ref{tab:resources}, adds as many magic-state factories as speed up
+the run. The smallest layout uses one factory. Each shot then takes 60 to
+75 times longer, so the crossover comes later. \emph{Qubits.} At
+$p=10^{-4}$ the crossover needs \indiaFastQloB--\indiaFastQhiB{} thousand
+physical qubits in the fastest layout ($N^*=\indiaFastNloB$--\indiaFastNhiB)
+and \indiaMinQloB--\indiaMinQhiB{} thousand in the smallest one
 ($N^*=\indiaMinNloB$--\indiaMinNhiB, but \indiaMinTloB--\indiaMinThiB{}
-years of run time); at $p=10^{-3}$ these become
+years of run time). At $p=10^{-3}$ these numbers become
 \indiaFastQloA--\indiaFastQhiA{} and \indiaMinQloA--\indiaMinQhiA{}
-thousand. Against the mission's 1000-qubit target the smallest of these
-machines is \indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times larger, about
-\indiaMinDoubloB{} doublings of qubit count beyond 2031; the time-optimal
-one is \indiaFastDoubloB--\indiaFastDoubhiB{} doublings away.
-\emph{Error rate.} A 96\% fidelity is a 4\% error, \indiaQpiaiOverThreshold{}
-times above the $\sim$1\% surface-code threshold, so no number of such
-qubits can run this computation; reaching $p=10^{-3}$ or $10^{-4}$ needs a
-further \indiaErrGapA{} or \indiaErrGapB{} times lower error. The error
-rate is the binding constraint and comes first: below threshold every
-factor of ten in $p$ cuts the qubit count by a factor of five to
-thirteen in our estimates, which is worth
-more than any of the doublings above. For India's roadmap this
-application therefore asks first for two-qubit errors near $10^{-4}$, and
-only then for qubit counts of order $10^4$--$10^5$, well beyond the
-2031 target.
+thousand. The smallest of these machines is
+\indiaMinGapNQMloB--\indiaMinGapNQMhiB{} times larger than the mission's
+1000-qubit target. That is about \indiaMinDoubloB{} doublings of qubit
+count beyond 2031, and the fastest layout is
+\indiaFastDoubloB--\indiaFastDoubhiB{} doublings away. \emph{Error rate.} A
+fidelity of 96\% means a 4\% error. This is \indiaQpiaiOverThreshold{} times
+above the surface-code threshold of about 1\%, so no number of such qubits
+can run this calculation. Reaching $p=10^{-3}$ or $10^{-4}$ needs an error
+\indiaErrGapA{} or \indiaErrGapB{} times lower. The error rate is therefore
+the main limit and comes first. Below threshold, each tenfold drop in $p$
+cuts the qubit count by a factor of five to thirteen in our estimates,
+which is worth more than any of the doublings above. For India's roadmap,
+this application asks first for two-qubit errors near $10^{-4}$. Only then
+does it ask for $10^4$ to $10^5$ qubits, well beyond the 2031 target.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{../figures/fig5_hardware.pdf}
-\caption{Hardware check on 12 qubits: staggered magnetization after a
-N\'eel-state quench on a 12-spin flake (\mainSet{} couplings), from exact
-evolution, from the noiseless Trotter circuit, and from the same circuit
-transpiled to \texttt{\hwBackend} and run on \hwSource{} (\hwShots{} shots per point; one
-Trotter step per $\hwStepT$\,meV$^{-1}$, \hwGatesStep--\hwGatesMax{}
-two-qubit gates).}
+\caption{Hardware check on 12 qubits. The staggered magnetization after
+starting a 12-spin flake (\mainSet{} couplings) in the N\'eel state, from
+exact evolution, from the noiseless Trotter circuit, and from the same
+circuit compiled for \texttt{\hwBackend} and run on \hwSource{} (\hwShots{}
+shots per point, one Trotter step per $\hwStepT$\,meV$^{-1}$, and
+\hwGatesStep{} to \hwGatesMax{} two-qubit gates).}
 \label{fig:hardware}
 \end{figure}
 
-\textbf{Hardware check.} To see where present hardware stands, we run the
-same Trotter circuit on 12 qubits. The Hadamard-test protocol, with
-ground-state preparation, is far too deep, so we use the standard quench:
-the N\'eel state of an open 12-spin honeycomb flake with the \mainSet{}
-couplings is evolved and every spin is measured in the $z$ basis. The
-Qiskit~\cite{qiskit2024} circuit reproduces our state-vector Trotter
-evolution exactly. Transpiled to IBM's Heron processor
-\texttt{\hwBackend} it needs \hwGatesStep{} two-qubit gates per Trotter
-step. On \hwSource\hwNote, the measured magnetizations deviate from the exact
-ones by up to \hwErrStep{} after a single step at
-$t=\hwStepT$\,meV$^{-1}$, only \hwFracT\% of the window $T$, whereas the
-noiseless circuit stays within \hwTrotErrMax; after \hwGatesMax{}
-two-qubit gates only \hwKeepLast\% of the staggered magnetization survives
-(Fig.~\ref{fig:hardware}). Without error correction the experiment-defined
-target is out of reach by orders of magnitude in circuit depth, which is
-why the crossover assumes a fault-tolerant machine.
+\textbf{Hardware check.} To see where today's hardware stands, we run the
+same Trotter circuit on 12 qubits. The full Hadamard-test method, with
+ground-state preparation, needs far too many gates. So we use a standard
+test instead: we start an open 12-spin honeycomb flake with the \mainSet{}
+couplings in the N\'eel state, evolve it, and measure every spin along $z$.
+The Qiskit~\cite{qiskit2024} circuit gives exactly the same result as our
+state-vector Trotter code. Compiled for IBM's Heron processor
+\texttt{\hwBackend}, it needs \hwGatesStep{} two-qubit gates per Trotter
+step. On \hwSource\hwNote, the measured magnetizations differ from the
+exact ones by up to \hwErrStep{} after a single step at
+$t=\hwStepT$\,meV$^{-1}$, only \hwFracT\% of the window $T$. The noiseless
+circuit stays within \hwTrotErrMax. After \hwGatesMax{} two-qubit gates,
+only \hwKeepLast\% of the staggered magnetization survives
+(Fig.~\ref{fig:hardware}). Without error correction, the accuracy the
+experiment needs is out of reach by orders of magnitude in circuit depth.
+This is why the crossover assumes a fault-tolerant machine.
 
 \section{Limitations and outlook}
 
-\emph{Classical baseline.} Exact simulation is not the strongest
-conceivable classical method, so our $N^*$ is a lower bound on where
-advantage could begin. Translation symmetry would save a further factor
-$\sim N/2$, and continued-fraction Lanczos~\cite{gagliano1987} avoids time
-stepping altogether for a fixed broadening. Our MPS estimate rests on two
-short cylinders, a bound rather than the momentum-resolved error, and a
-linear fit of $\ln\chi$ in time and width, so it is crude; PEPS,
-time-dependent variational Monte Carlo and neural quantum states were not
-run. Each could push $N^*$ up, although long-time dynamics in two
-dimensions is where they struggle most. \emph{Extrapolation.} Classical costs and Trotter errors are
-extrapolated from $N\le18$ (\mainSet{}) or $N\le16$ (the other sets); the
-absence of an $N$ trend in the Trotter error rests on few sizes with strong
-finite-size effects, and so does the reference peak $S_{\max}$, which
-varies by a factor of three between sizes. \emph{Measurement.} Measuring $S(\mathbf q,t)$ directly rather
-than site-resolved correlators, or sharing shots between circuits, could
-cut the circuit count by up to a factor $N$. \emph{Physics.} We assume zero
-temperature, ignore the neutron polarization factor and use parameter sets
-that are themselves uncertain. \emph{Ground-state preparation} is modelled
-coarsely and dominates when included. Despite these caveats, the
-experiment-defined target turns ``quantum advantage for materials'' into a
-concrete, checkable number, and our open code lets each assumption be
-replaced.
+\emph{Classical baseline.} Exact simulation is not the strongest possible
+classical method, so our $N^*$ is a lower limit on where an advantage could
+start. Translation symmetry would save another factor of about $N/2$, and
+continued-fraction Lanczos~\cite{gagliano1987} avoids time stepping
+altogether for a fixed blurring. Our MPS estimate is rough. It rests on two
+short cylinders, an upper bound on the error rather than the error in
+momentum space, and a straight-line fit of $\ln\chi$ in time and width. We
+did not run PEPS, time-dependent variational Monte Carlo or neural quantum
+states. Each could raise $N^*$, although long-time dynamics in two
+dimensions is where they struggle most. \emph{Extrapolation.} We
+extrapolate the classical costs and Trotter errors from $N\le18$ for the
+\mainSet{} set and $N\le16$ for the others. Our claim that the Trotter error
+does not grow with $N$ rests on few sizes with strong finite-size effects,
+and so does the reference peak $S_{\max}$, which varies threefold between
+sizes. \emph{Measurement.} Measuring $S(\mathbf q,t)$ directly instead of
+correlations between site pairs, or sharing shots between circuits, could
+cut the number of circuits by up to a factor of $N$. \emph{Physics.} We
+assume zero temperature, ignore the neutron polarization factor, and use
+parameter sets that are themselves uncertain. \emph{Ground-state
+preparation} is modelled roughly and dominates when included. Even so,
+tying the accuracy to an experiment turns ``quantum advantage for
+materials'' into a concrete number that others can check, and our code
+lets each assumption be changed.
 
 \textbf{Code and data} will be released publicly upon acceptance.
 
 \section*{Acknowledgment}
-Code, figures and draft text for this work were prepared with the
-assistance of an AI system (Claude, Anthropic); the authors checked the
-methods, results and text and take responsibility for them.
+Code, figures and draft text for this work were prepared with the help of
+an AI system (Claude, Anthropic). The authors checked the methods, results
+and text and take responsibility for them.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}

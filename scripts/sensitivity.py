@@ -34,7 +34,7 @@ from crossover import prep_model  # noqa: E402
 DATA = ROOT / "data"
 YEAR = 3.156e7
 SETS = ["winter2017", "ran2017", "laurell2020"]
-LABEL = {"winter2017": "Winter", "ran2017": "Ran", "laurell2020": "Laurell--Okamoto"}
+LABEL = {"winter2017": "Winter", "ran2017": "Ran", "laurell2020": "Laurell and Okamoto"}
 DES = [0.5, 1.0, 2.0]
 EPSS = [0.01, 0.02, 0.05, 0.10]
 QMODELS = {"ns, $p=10^{-4}$": 1e-4, "ns, $p=10^{-3}$": 1e-3,
@@ -109,7 +109,7 @@ def pick(rows, **kw):
 
 def fmt_time(yr):
     if yr is None:
-        return "--"
+        return "n/a"
     return f"{yr:.0f}~yr" if yr >= 1 else f"{yr * 365:.0f}~d"
 
 
@@ -120,10 +120,10 @@ def write_table(rows):
         if r is None:
             return
         n = r[key]
-        q = f"{r['phys_qubits'] / 1e6:.2g}\\,M" if r["phys_qubits"] else "--"
+        q = f"{r['phys_qubits'] / 1e6:.2g}\\,M" if r["phys_qubits"] else "n/a"
         t = fmt_time(r["runtime_yr"])
         if key != "N_star":  # runtime and qubits were recorded at the plain N* only
-            q = t = "--"
+            q = t = "n/a"
         lines.append(f"{label} & {n if n else '$>$120'} & {t} & {q} \\\\")
 
     add("Baseline (\\S\\ref{sec:results})", pick(rows))
